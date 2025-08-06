@@ -69,15 +69,25 @@ import quinoa_image from "./quinoa_image.png";
 import brown_rice_image from "./brown_rice_image.png";
 import barley_image from "./barley_image.png";
 import main_banner from "./main_banner.png";
-// import livingroom from "./living_room.png";
+import living_room from "./living_room.png";
 import kitchen from "./kitchen.png";
 import bedroom from "./bedroom.png";
+import dining_room from "./dining_room.png";
+import office from "./office.png";
+import outdoor from "./outdoor.png";
+import kid_room from "./kid_room.png";
+import decore from "./decore.png";
 
 export const assets = {
   logo,
-  // livingroom,
+  living_room,
+  dining_room,
   kitchen,
   bedroom,
+  office,
+  decore,
+  outdoor,
+  kid_room,
   search_icon,
   main_banner,
   remove_icon,
@@ -109,12 +119,12 @@ export const assets = {
 
 export const categories = [
 
-  // {
-  //    text: "Living Room",
-  //    path: "Fruits",
-  //    image: living_room,
-  //    bgColor: "#FEE0E0",
-  // },
+    {
+    text: "living Room",
+    path: "Grains",
+    image: living_room,
+    bgColor: "#F1E3F9",
+  },
   {
     text: "Bedroom",
     path: "Drinks",
@@ -124,7 +134,7 @@ export const categories = [
   {
     text: "Dining room",
     path: "Instant",
-    image: maggi_image,
+    image: dining_room,
     bgColor: "#E1F5EC",
   },
   {
@@ -136,31 +146,25 @@ export const categories = [
   {
     text: "Office",
     path: "Dairy",
-    image: dairy_product_image,
+    image: office,
     bgColor: "#FEE6CD",
   },
   {
     text: "Outdoor",
     path: "Bakery",
-    image: bakery_image,
-    bgColor: "#E0F6FE",
-  },
-  {
-    text: "Storage",
-    path: "Grains",
-    image: grain_image,
-    bgColor: "#F1E3F9",
+    image: outdoor,
+    bgColor: "#E1F5EC",
   },
   {
     text: "Kid's Room",
     path: "Grains",
-    image: grain_image,
-    bgColor: "#F1E3F9",
+    image: kid_room,
+    bgColor: "#F0F5DE",
   },
   {
     text: "Decor  Accent Furniture",
     path: "Grains",
-    image: grain_image,
+    image: decore,
     bgColor: "#F1E3F9",
   },
 ];
