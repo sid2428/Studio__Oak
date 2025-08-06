@@ -25,7 +25,6 @@ import main_banner_bg_sm from "./main_banner_bg_sm.png";
 import bottom_banner_image from "./bottom_banner_image.png";
 import bottom_banner_image_sm from "./bottom_banner_image_sm.png";
 import add_address_iamge from "./add_address_image.svg";
-import organic_vegitable_image from "./organic_vegitable_image.png";
 import fresh_fruits_image from "./fresh_fruits_image.png";
 import bottles_image from "./bottles_image.png";
 import maggi_image from "./maggi_image.png";
@@ -69,10 +68,18 @@ import vanilla_muffins_image from "./vanilla_muffins_image.png";
 import quinoa_image from "./quinoa_image.png";
 import brown_rice_image from "./brown_rice_image.png";
 import barley_image from "./barley_image.png";
+import main_banner from "./main_banner.png";
+// import livingroom from "./living_room.png";
+import kitchen from "./kitchen.png";
+import bedroom from "./bedroom.png";
 
 export const assets = {
   logo,
+  // livingroom,
+  kitchen,
+  bedroom,
   search_icon,
+  main_banner,
   remove_icon,
   arrow_right_icon_colored,
   star_icon,
@@ -101,44 +108,57 @@ export const assets = {
 };
 
 export const categories = [
+
+  // {
+  //    text: "Living Room",
+  //    path: "Fruits",
+  //    image: living_room,
+  //    bgColor: "#FEE0E0",
+  // },
   {
-    text: "Organic veggies",
-    path: "Vegetables",
-    image: organic_vegitable_image,
-    bgColor: "#FEF6DA",
-  },
-  {
-    text: "Fresh Fruits",
-    path: "Fruits",
-    image: fresh_fruits_image,
-    bgColor: "#FEE0E0",
-  },
-  {
-    text: "Cold Drinks",
+    text: "Bedroom",
     path: "Drinks",
-    image: bottles_image,
+    image: bedroom,
     bgColor: "#F0F5DE",
   },
   {
-    text: "Instant Food",
+    text: "Dining room",
     path: "Instant",
     image: maggi_image,
     bgColor: "#E1F5EC",
   },
   {
-    text: "Dairy Products",
+    text: "Kitchen",
+    path: "Dairy",
+    image: kitchen,
+    bgColor: "#FEE6CD",
+  },
+  {
+    text: "Office",
     path: "Dairy",
     image: dairy_product_image,
     bgColor: "#FEE6CD",
   },
   {
-    text: "Bakery & Breads",
+    text: "Outdoor",
     path: "Bakery",
     image: bakery_image,
     bgColor: "#E0F6FE",
   },
   {
-    text: "Grains & Cereals",
+    text: "Storage",
+    path: "Grains",
+    image: grain_image,
+    bgColor: "#F1E3F9",
+  },
+  {
+    text: "Kid's Room",
+    path: "Grains",
+    image: grain_image,
+    bgColor: "#F1E3F9",
+  },
+  {
+    text: "Decor  Accent Furniture",
     path: "Grains",
     image: grain_image,
     bgColor: "#F1E3F9",
