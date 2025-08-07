@@ -84,6 +84,9 @@ import sustainable_icon from "./sustainable_icon.svg";
 import assembly_icon from "./assembly_icon.svg";
 import subtle_pattern from "./subtle_pattern.svg";
 
+import moodboard_bg from "./moodboard_bg.png"; 
+
+
 export const assets = {
   logo,
   living_room,
@@ -126,6 +129,7 @@ export const assets = {
   sustainable_icon,
   assembly_icon,
   subtle_pattern,
+  moodboard_bg,
 };
 
 export const categories = [

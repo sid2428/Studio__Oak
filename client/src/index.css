@@ -25,3 +25,31 @@
   display: none;
 }
 
+@layer components {
+  .brand-promise-moodboard {
+    @apply relative w-full py-16 sm:py-24 bg-cover bg-center rounded-2xl overflow-hidden;
+  }
+
+  .overlay-content {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-5 items-center gap-8 lg:gap-16;
+  }
+
+  /* Shared styles for both cards */
+  .features-card, .newsletter-card {
+    @apply backdrop-blur-lg rounded-2xl border border-white/25 p-8 sm:p-10 shadow-lg;
+  }
+  
+  /* Increased opacity for better readability */
+  .features-card {
+    @apply bg-white/85 lg:col-span-3;
+  }
+
+  /* Newsletter card now matches the style */
+  .newsletter-card {
+    @apply bg-white/85 lg:col-span-2;
+  }
+
+  .newsletter-card input::placeholder {
+    @apply text-stone-400;
+  }
+}
