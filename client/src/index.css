@@ -9,6 +9,17 @@
 @theme {
   --color-primary: #4fbf8b;
   --color-primary-dull: #44ae7c;
+
+   /* -- NEW THEME -- */
+   --color-background: #FDFDFD; /* Soft, almost white cream */
+  --color-text-primary: #5D4037; /* Rich, dark brown for text */
+  --color-text-secondary: #8D6E63; /* Lighter brown for subtitles */
+  --color-accent: #A1887F; /* Muted brown for buttons and links */
+  --color-accent-hover: #8D6E63; /* Darker accent for hover effects */
+  --color-border: #E0E0E0; /* Soft gray for borders */
+
+  --color-primary: #815a58;
+  --color-primary-dull: #6c4c4a;
 }
 
 .no-scrollbar::-webkit-scrollbar{

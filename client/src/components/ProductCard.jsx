@@ -30,7 +30,7 @@ const ProductCard = ({ product }) => {
             <p className="text-text-primary font-medium text-lg truncate w-full">{product.name}</p>
             <div className="flex items-center gap-0.5">
               {Array(5).fill("").map((_, i) => (
-                  <StarIcon key={i} className={`md:w-4 w-3.5 ${i < 4 ? 'text-amber-500' : 'text-gray-300'}`} />
+                  <StarIcon key={i} className={`md:w-4 w-3.5 ${i < 4 ? 'text-[#e5c100]' : 'text-gray-300'}`} />
               ))}
               <p className="text-text-secondary ml-1">(4)</p>
             </div>
@@ -40,9 +40,9 @@ const ProductCard = ({ product }) => {
         {/* Action area with price and button */}
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
           
-          {/* FIXED: Price section now includes original price */}
+          {/* Price section now includes original price */}
           <div className="flex flex-col">
-            <p className="md:text-lg text-base font-medium text-amber-800">
+            <p className="md:text-lg text-base font-medium text-[#815a58]">
               {currency}{product.offerPrice}
             </p>
             <p className="text-xs text-text-secondary line-through">
@@ -53,7 +53,7 @@ const ProductCard = ({ product }) => {
           <div onClick={(e) => { e.stopPropagation(); }}>
             {!cartItems[product._id] ? (
               <button
-                className="px-4 py-1.5 bg-amber-700 text-white rounded-md cursor-pointer hover:bg-amber-800 transition-colors text-sm font-semibold"
+                className="px-4 py-1.5 bg-[#815a58] text-white rounded-md cursor-pointer hover:bg-[#6c4c4a] transition-colors text-sm font-semibold"
                 onClick={() => addToCart(product._id)}
               >
                 Add
@@ -62,7 +62,7 @@ const ProductCard = ({ product }) => {
               <div className="flex items-center justify-center gap-2 w-auto h-8 bg-gray-100 rounded-full select-none px-1">
                 <button
                   onClick={() => { removeFromCart(product._id); }}
-                  className="cursor-pointer text-lg px-2 text-amber-800"
+                  className="cursor-pointer text-lg px-2 text-[#815a58]"
                 >
                   -
                 </button>
@@ -71,7 +71,7 @@ const ProductCard = ({ product }) => {
                 </span>
                 <button
                   onClick={() => { addToCart(product._id); }}
-                  className="cursor-pointer text-lg px-2 text-amber-800"
+                  className="cursor-pointer text-lg px-2 text-[#815a58]"
                 >
                   +
                 </button>
