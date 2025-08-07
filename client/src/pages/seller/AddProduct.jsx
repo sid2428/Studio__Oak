@@ -11,6 +11,7 @@ const AddProduct = () => {
     const [category, setCategory] = useState('');
     const [price, setPrice] = useState('');
     const [offerPrice, setOfferPrice] = useState('');
+    const [stock, setStock] = useState(''); // New state for stock
 
     const {axios} = useAppContext()
 
@@ -23,7 +24,8 @@ const AddProduct = () => {
                 description: description.split('\n'),
                 category,
                 price,
-                offerPrice
+                offerPrice,
+                stock // Add stock to productData
             }
 
             const formData = new FormData();
@@ -41,6 +43,7 @@ const AddProduct = () => {
                 setCategory('')
                 setPrice('')
                 setOfferPrice('')
+                setStock('') // Reset stock field
                 setFiles([])
             }else{
                 toast.error(data.message)
@@ -104,6 +107,12 @@ const AddProduct = () => {
                         <input onChange={(e)=> setOfferPrice(e.target.value)} value={offerPrice} 
                         id="offer-price" type="number" placeholder="0" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" required />
                     </div>
+                </div>
+                {/* New stock input field */}
+                <div className="flex flex-col gap-1 max-w-md">
+                    <label className="text-base font-medium" htmlFor="product-stock">Product Stock</label>
+                    <input onChange={(e)=> setStock(e.target.value)} value={stock} 
+                    id="product-stock" type="number" placeholder="0" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" required />
                 </div>
                 <button className="px-8 py-2.5 bg-primary text-white font-medium rounded cursor-pointer">ADD</button>
             </form>
