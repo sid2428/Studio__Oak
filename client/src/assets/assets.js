@@ -78,6 +78,12 @@ import outdoor from "./outdoor.png";
 import kid_room from "./kid_room.png";
 import decore from "./decore.png";
 
+import design_icon from "./design_icon.svg";
+import craftsmanship_icon from "./craftsmanship_icon.svg";
+import sustainable_icon from "./sustainable_icon.svg";
+import assembly_icon from "./assembly_icon.svg";
+import subtle_pattern from "./subtle_pattern.svg";
+
 export const assets = {
   logo,
   living_room,
@@ -115,6 +121,11 @@ export const assets = {
   bottom_banner_image_sm,
   add_address_iamge,
   box_icon,
+  design_icon,
+  craftsmanship_icon,
+  sustainable_icon,
+  assembly_icon,
+  subtle_pattern,
 };
 
 export const categories = [
@@ -192,24 +203,24 @@ export const footerLinks = [
 
 export const features = [
   {
-    icon: delivery_truck_icon,
-    title: "Fastest Delivery",
-    description: "Groceries delivered in under 30 minutes.",
+    icon: design_icon,
+    title: "Timeless Design",
+    description: "Curated pieces that blend modern style with classic comfort.",
   },
   {
-    icon: leaf_icon,
-    title: "Freshness Guaranteed",
-    description: "Fresh produce straight from the source.",
+    icon: craftsmanship_icon,
+    title: "Quality Craftsmanship",
+    description: "Built to last with premium materials and attention to detail.",
   },
   {
-    icon: coin_icon,
-    title: "Affordable Prices",
-    description: "Quality groceries at unbeatable prices.",
+    icon: sustainable_icon,
+    title: "Sustainable Materials",
+    description: "Responsibly sourced wood and eco-friendly fabrics for your peace of mind.",
   },
   {
-    icon: trust_icon,
-    title: "Trusted by Thousands",
-    description: "Loved by 10,000+ happy customers.",
+    icon: assembly_icon,
+    title: "Hassle-Free Assembly",
+    description: "Clear instructions and thoughtful design make setup a breeze.",
   },
 ];
 
