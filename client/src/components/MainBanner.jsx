@@ -59,7 +59,7 @@ const MainBanner = () => {
 
 
   return (
-    <div className="relative w-full min-h-screen">
+    <div className="relative w-full rounded-2xl overflow-hidden">
       <img
         src={assets.main_banner}
         alt="banner"
