@@ -1,55 +1,81 @@
-import React, { useEffect, useState } from 'react'
-import { useAppContext } from '../../context/AppContext'
+import React, { useEffect, useState } from 'react';
+import { useAppContext } from '../../context/AppContext';
 import toast from 'react-hot-toast';
 
 const SellerLogin = () => {
-    const {isSeller, setIsSeller, navigate, axios} = useAppContext()
+    const { isSeller, setIsSeller, navigate, axios } = useAppContext();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const onSubmitHandler = async (event)=>{
+    const onSubmitHandler = async (event) => {
+        event.preventDefault();
         try {
-            event.preventDefault();
-            const {data} = await axios.post('/api/seller/login', {email, password})
-            if(data.success){
-                setIsSeller(true)
-                navigate('/admin')
-            }else{
-                toast.error(data.message)
+            const { data } = await axios.post('/api/seller/login', { email, password });
+            if (data.success) {
+                setIsSeller(true);
+                navigate('/admin');
+            } else {
+                toast.error(data.message);
             }
         } catch (error) {
-            toast.error(error.message)
+            toast.error(error.message);
         }
-        
-    }
+    };
 
-    useEffect(()=>{
-        if(isSeller){
-            navigate("/admin")
+    useEffect(() => {
+        if (isSeller) {
+            navigate("/admin");
         }
-    },[isSeller])
+    }, [isSeller]);
 
-  return !isSeller && (
-    <div className='min-h-screen flex items-center justify-center text-sm text-gray-600'>
-        <form onSubmit={onSubmitHandler} className='flex flex-col gap-5 items-start p-8 py-12 min-w-80 sm:min-w-88 rounded-lg shadow-xl border border-gray-200'>
-            <p className='text-2xl font-medium m-auto'><span className="text-primary">Admin</span> Login</p>
-            <div className="w-full ">
-                <p>Email</p>
-                <input onChange={(e)=>setEmail(e.target.value)} value={email}
-                 type="email" placeholder="enter your email" 
-                className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary" required/>
+    return !isSeller && (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+                <h2 className="text-3xl font-bold text-center text-gray-800 mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>Admin Login</h2>
+                <form onSubmit={onSubmitHandler} className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <input 
+                            onChange={(e) => setEmail(e.target.value)} 
+                            value={email}
+                            type="email" 
+                            placeholder="admin@example.com" 
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" 
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Password</label>
+                        <input 
+                            onChange={(e) => setPassword(e.target.value)} 
+                            value={password}
+                            type="password" 
+                            placeholder="••••••••"
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" 
+                            required
+                        />
+                    </div>
+                    <div>
+                        <button 
+                            type="submit" 
+                            className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary-dull focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                        >
+                            Login
+                        </button>
+                    </div>
+                </form>
+                <div className="text-center mt-6">
+                    <button 
+                        type="button" 
+                        onClick={() => navigate("/")} 
+                        className="text-sm text-primary hover:underline"
+                    >
+                        Return to Site
+                    </button>
+                </div>
             </div>
-            <div className="w-full ">
-                <p>Password</p>
-                <input onChange={(e)=>setPassword(e.target.value)} value={password}
-                 type="password" placeholder="enter your password"
-                className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary" required/>
-            </div>
-            <button className="bg-primary text-white w-full py-2 rounded-md cursor-pointer">Login</button>
-            <button type="button" onClick={()=> navigate("/")} className="w-full py-2 rounded-md cursor-pointer text-primary border border-primary hover:bg-primary/10 transition">Go to Client</button>
-        </form>
-    </div>
-  )
-}
+        </div>
+    );
+};
 
-export default SellerLogin
+export default SellerLogin;

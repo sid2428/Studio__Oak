@@ -4,9 +4,7 @@ import { useAppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
 
 const SellerLayout = () => {
-
     const { axios, navigate } = useAppContext();
-
 
     const sidebarLinks = [
         { name: "Add Product", path: "/admin", icon: assets.add_icon },
@@ -14,50 +12,65 @@ const SellerLayout = () => {
         { name: "Orders", path: "/admin/orders", icon: assets.order_icon },
     ];
 
-    const logout = async ()=>{
+    const logout = async () => {
         try {
             const { data } = await axios.get('/api/seller/logout');
-            if(data.success){
-                toast.success(data.message)
-                navigate('/')
-            }else{
-                toast.error(data.message)
+            if (data.success) {
+                toast.success(data.message);
+                navigate('/');
+            } else {
+                toast.error(data.message);
             }
-        } catch (error) {
-            toast.error(error.message)
+        } catch (error)         {
+            toast.error(error.message);
         }
-    }
+    };
 
     return (
-        <>
-            <div className="flex items-center justify-between px-4 md:px-8 border-b border-gray-300 py-3 bg-white">
-                <Link to='/'>
-                    <img src={assets.logo} alt="log" className="cursor-pointer w-34 md:w-38" />
-                </Link>
-                <div className="flex items-center gap-5 text-gray-500">
-                    <p>Hi! Admin</p>
-                    <button onClick={logout} className='border rounded-full text-sm px-4 py-1'>Logout</button>
+        <div className="flex min-h-screen bg-gray-100">
+            {/* Sidebar */}
+            <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+                <div className="p-6 border-b border-gray-200">
+                    <Link to='/' style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl text-stone-800 tracking-wide">
+                        Studio Oak
+                    </Link>
                 </div>
+                <nav className="flex-1 p-4">
+                    <ul className="space-y-2">
+                        {sidebarLinks.map((item) => (
+                            <li key={item.name}>
+                                <NavLink 
+                                    to={item.path} 
+                                    end={item.path === "/admin"}
+                                    className={({ isActive }) => 
+                                        `flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
+                                            isActive 
+                                                ? "bg-primary text-white" 
+                                                : "text-gray-600 hover:bg-gray-200"
+                                        }`
+                                    }
+                                >
+                                    <img src={item.icon} alt={item.name} className="w-6 h-6" />
+                                    <span>{item.name}</span>
+                                </NavLink>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+            </aside>
+
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col">
+                <header className="bg-white border-b border-gray-200 p-4 flex justify-end items-center">
+                    <button onClick={logout} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                        Logout
+                    </button>
+                </header>
+                <main className="flex-1 p-6 overflow-y-auto">
+                    <Outlet />
+                </main>
             </div>
-            <div className="flex">
-               <div className="md:w-64 w-16 border-r h-[95vh] text-base border-gray-300 pt-4 flex flex-col">
-                {sidebarLinks.map((item) => (
-                    <NavLink to={item.path} key={item.name} end={item.path === "/admin"}
-                        className={({isActive})=>`flex items-center py-3 px-4 gap-3 
-                            ${isActive ? "border-r-4 md:border-r-[6px] bg-primary/10 border-primary text-primary"
-                                : "hover:bg-gray-100/90 border-white"
-                            }`
-                        }
-                    >
-                        <img src={item.icon} alt="" className="w-7 h-7" />
-                        <p className="md:block hidden text-center">{item.name}</p>
-                    </NavLink>
-                ))}
-            </div> 
-                <Outlet/>
-            </div>
-             
-        </>
+        </div>
     );
 };
 
