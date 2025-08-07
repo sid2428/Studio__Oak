@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
 
 *{
@@ -7,9 +7,8 @@
 }
 
 @theme {
-  --color-primary: #4fbf8b;
-  --color-primary-dull: #44ae7c;
-
+  --color-primary: #374151; /* A darker, more elegant primary color */
+  --color-primary-dull: #1f2937;
    /* -- NEW THEME -- */
    --color-background: #FDFDFD; /* Soft, almost white cream */
   --color-text-primary: #5D4037; /* Rich, dark brown for text */
@@ -24,4 +23,29 @@
 
 .no-scrollbar::-webkit-scrollbar{
   display: none;
+}
+
+@layer components {
+  .brand-promise-moodboard {
+    @apply relative w-full py-16 sm:py-24 bg-cover bg-center;
+  }
+
+  .showcase-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .showcase-card {
+    /* More transparent background */
+    @apply bg-white/70; 
+    
+    /* Stronger blur effect for readability */
+    @apply backdrop-blur-xl; 
+
+    /* Other styles for a polished look */
+    @apply rounded-2xl border border-white/25 p-8 sm:p-12 shadow-xl;
+  }
+
+  .showcase-card input::placeholder {
+    @apply text-stone-500;
+  }
 }
