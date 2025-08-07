@@ -8,7 +8,7 @@ const TwitterIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" width="20" h
 
 const Footer = () => {
   return (
-    <footer className="bg-neutral-50 text-stone-700 font-serif border-t border-stone-200">
+    <footer className="bg-surface text-stone-700 font-serif border-t border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         
         {/* Main multi-column layout */}
@@ -18,7 +18,7 @@ const Footer = () => {
           <div className="lg:col-span-2 pr-8">
             <Link to="/" className="inline-block mb-4">
               {/* MODIFIED: Replaced image logo with a styled text logo */}
-              <h1 className="text-2xl font-bold text-stone-800 font-serif tracking-wide">Studio Oak</h1>
+              <h1 className="text-2xl font-bold text-stone-800 font-serif tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>Studio Oak</h1>
             </Link>
             <p className="text-sm text-stone-500 leading-relaxed">
               Crafting timeless furniture for the modern home. We believe in quality, design, and sustainability.
