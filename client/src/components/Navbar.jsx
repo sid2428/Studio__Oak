@@ -31,7 +31,13 @@ const Icons = {
       <circle cx="20" cy="21" r="1"></circle>
       <path d="M1 1h4l2.68 13.39a2 2 0 0 0 1.95 1.61h9.73a2 2 0 0 0 1.95-1.61L23 6H6"></path>
     </svg>
-  )
+  ),
+  Box: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+  ),
+  LogOut: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+  ),
 };
 
 const Navbar = () => {
@@ -120,11 +126,11 @@ const Navbar = () => {
           {/* User Profile / Login */}
           {!user ? (
             <button
-              onClick={() => setShowUserLogin(true)}
-              className="px-8 py-2 bg-amber-700 hover:bg-amber-900 transition text-white rounded-full font-medium font-serif shadow-lg hover:shadow-xl"
-            >
-              Login
-            </button>
+            onClick={() => setShowUserLogin(true)}
+            className="px-8 py-2 bg-amber-700 hover:bg-amber-800 transition text-white rounded-full font-medium font-serif shadow-lg hover:shadow-xl"
+          >
+            Login
+          </button>
           ) : (
             <div className="relative" ref={profileDropdownRef}>
               <button
@@ -139,25 +145,25 @@ const Navbar = () => {
                 <div className="absolute top-10 right-0 mt-2 w-48 bg-neutral-50 border border-stone-300 rounded-lg shadow-xl z-40 transition-all duration-300 origin-top-right animate-fade-in-up">
                   <ul className="py-1">
                     <li
-                      onClick={() => {
-                        navigate('/my-orders');
-                        setProfileDropdownOpen(false);
-                      }}
-                      className={dropdownItemStyles}
-                    >
-                      <img src={assets.bag_icon} className="h-5" alt="My Orders" />
-                      My Orders
-                    </li>
-                    <li
-                      onClick={() => {
-                        logout();
-                        setProfileDropdownOpen(false);
-                      }}
-                      className={dropdownItemStyles}
-                    >
-                      <img src={assets.logout_icon} className="h-5" alt="Logout" />
-                      Logout
-                    </li>
+                        onClick={() => {
+                          navigate('/my-orders');
+                          setProfileDropdownOpen(false);
+                        }}
+                        className={dropdownItemStyles}
+                      >
+                        <Icons.Box />
+                        My Orders
+                      </li>
+                      <li
+                        onClick={() => {
+                          logout();
+                          setProfileDropdownOpen(false);
+                        }}
+                        className={dropdownItemStyles}
+                      >
+                        <Icons.LogOut />
+                        Logout
+                      </li>
                   </ul>
                 </div>
               )}

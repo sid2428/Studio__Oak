@@ -13,7 +13,7 @@ const SellerLogin = () => {
             const {data} = await axios.post('/api/seller/login', {email, password})
             if(data.success){
                 setIsSeller(true)
-                navigate('/seller')
+                navigate('/admin')
             }else{
                 toast.error(data.message)
             }
@@ -25,7 +25,7 @@ const SellerLogin = () => {
 
     useEffect(()=>{
         if(isSeller){
-            navigate("/seller")
+            navigate("/admin")
         }
     },[isSeller])
 

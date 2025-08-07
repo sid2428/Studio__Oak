@@ -14,7 +14,7 @@ const ProductCategory = () => {
     const filteredProducts = products.filter((product)=>product.category.toLowerCase() === category)
 
   return (
-    <div className='mt-16'>
+    <div className='mt-16 pb-16'>
       {searchCategory && (
         <div className='flex flex-col items-end w-max'>
             <p className='text-2xl font-medium'>{searchCategory.text.toUpperCase()}</p>

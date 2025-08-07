@@ -121,82 +121,71 @@ export const categories = [
 
     {
     text: "living Room",
-    path: "Grains",
+    path: "living Room",
     image: living_room,
     bgColor: "#F1E3F9",
   },
   {
     text: "Bedroom",
-    path: "Drinks",
+    path: "Bedroom",
     image: bedroom,
     bgColor: "#F0F5DE",
   },
   {
     text: "Dining room",
-    path: "Instant",
+    path: "Dining room",
     image: dining_room,
     bgColor: "#E1F5EC",
   },
   {
     text: "Kitchen",
-    path: "Dairy",
+    path: "Kitchen",
     image: kitchen,
     bgColor: "#FEE6CD",
   },
   {
     text: "Office",
-    path: "Dairy",
+    path: "Office",
     image: office,
     bgColor: "#FEE6CD",
   },
   {
     text: "Outdoor",
-    path: "Bakery",
+    path: "Outdoor",
     image: outdoor,
     bgColor: "#E1F5EC",
   },
   {
     text: "Kid's Room",
-    path: "Grains",
+    path: "Kid's Room",
     image: kid_room,
     bgColor: "#F0F5DE",
   },
   {
-    text: "Decor  Accent Furniture",
-    path: "Grains",
+    text: "Decor Accent Furniture",
+    path: "Decor Accent Furniture",
     image: decore,
     bgColor: "#F1E3F9",
   },
 ];
 
+// Find and replace the entire footerLinks array with this:
 export const footerLinks = [
   {
-    title: "Quick Links",
+    title: "Shop",
     links: [
-      { text: "Home", url: "#" },
-      { text: "Best Sellers", url: "#" },
-      { text: "Offers & Deals", url: "#" },
-      { text: "Contact Us", url: "#" },
-      { text: "FAQs", url: "#" },
+      { text: "All Products", url: "/products" },
+      { text: "Living Room", url: "/products/Living Room" }, // Corrected path
+      { text: "Bedroom", url: "/products/bedroom" },       // Corrected path
+      { text: "Dining", url: "/products/dining-room" },     // Corrected path
     ],
   },
   {
-    title: "Need help?",
+    title: "Support",
     links: [
-      { text: "Delivery Information", url: "#" },
-      { text: "Return & Refund Policy", url: "#" },
-      { text: "Payment Methods", url: "#" },
-      { text: "Track your Order", url: "#" },
-      { text: "Contact Us", url: "#" },
-    ],
-  },
-  {
-    title: "Follow Us",
-    links: [
-      { text: "Instagram", url: "#" },
-      { text: "Twitter", url: "#" },
-      { text: "Facebook", url: "#" },
-      { text: "YouTube", url: "#" },
+      { text: "Contact Us", url: "#" }, // This can be a link to a contact page later
+      { text: "Shipping & Returns", url: "/FAQ" }, // Pointing to FAQ
+      { text: "FAQ", url: "/FAQ" },
     ],
   },
 ];
