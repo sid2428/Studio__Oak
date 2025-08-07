@@ -30,14 +30,13 @@ const SellerLogin = () => {
     },[isSeller])
 
   return !isSeller && (
-    <form onSubmit={onSubmitHandler} className='min-h-screen flex items-center text-sm text-gray-600'>
-
-        <div className='flex flex-col gap-5 m-auto items-start p-8 py-12 min-w-80 sm:min-w-88 rounded-lg shadow-xl border border-gray-200'>
-            <p className='text-2xl font-medium m-auto'><span className="text-primary">Seller</span> Login</p>
+    <div className='min-h-screen flex items-center justify-center text-sm text-gray-600'>
+        <form onSubmit={onSubmitHandler} className='flex flex-col gap-5 items-start p-8 py-12 min-w-80 sm:min-w-88 rounded-lg shadow-xl border border-gray-200'>
+            <p className='text-2xl font-medium m-auto'><span className="text-primary">Admin</span> Login</p>
             <div className="w-full ">
                 <p>Email</p>
                 <input onChange={(e)=>setEmail(e.target.value)} value={email}
-                 type="email" placeholder="enter you email" 
+                 type="email" placeholder="enter your email" 
                 className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary" required/>
             </div>
             <div className="w-full ">
@@ -47,9 +46,9 @@ const SellerLogin = () => {
                 className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary" required/>
             </div>
             <button className="bg-primary text-white w-full py-2 rounded-md cursor-pointer">Login</button>
-        </div>
-
-    </form>
+            <button type="button" onClick={()=> navigate("/")} className="w-full py-2 rounded-md cursor-pointer text-primary border border-primary hover:bg-primary/10 transition">Go to Client</button>
+        </form>
+    </div>
   )
 }
 
