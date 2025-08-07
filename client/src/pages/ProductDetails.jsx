@@ -60,12 +60,12 @@ const ProductDetails = () => {
             {/* MODIFICATION: Enhanced Typography */}
             <h1 className="text-4xl font-bold text-gray-800">{product.name}</h1>
 
-            <div className="flex items-center gap-1 mt-3">
+            {/* <div className="flex items-center gap-1 mt-3">
               {Array(5).fill("").map((_, i) => (
                 <img key={i} src={i < 4 ? assets.star_icon : assets.star_dull_icon} alt="" className="w-5" />
               ))}
               <p className="text-base text-gray-600 ml-2">(4 Reviews)</p>
-            </div>
+            </div> */}
 
             {/* MODIFICATION: Enhanced Price Display */}
             <div className="mt-6">

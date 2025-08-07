@@ -1,4 +1,4 @@
-import { assets, footerLinks } from "../assets/assets";
+import { footerLinks } from "../assets/assets";
 import { Link } from "react-router-dom";
 
 // Icons (These can stay as they are well-defined)
@@ -14,10 +14,11 @@ const Footer = () => {
         {/* Main multi-column layout */}
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8">
           
-          {/* Column 1: Logo and Brand Statement */}
+          {/* Column 1: New "Studio Oak" text logo and Brand Statement */}
           <div className="lg:col-span-2 pr-8">
             <Link to="/" className="inline-block mb-4">
-              <img className="h-10" src={assets.logo} alt="GreenCart Logo" />
+              {/* MODIFIED: Replaced image logo with a styled text logo */}
+              <h1 className="text-2xl font-bold text-stone-800 font-serif tracking-wide">Studio Oak</h1>
             </Link>
             <p className="text-sm text-stone-500 leading-relaxed">
               Crafting timeless furniture for the modern home. We believe in quality, design, and sustainability.
@@ -59,10 +60,11 @@ const Footer = () => {
           </div>
         </div>
         
-        {/* Bottom section with copyright */}
+        {/* Bottom section with updated copyright */}
         <div className="mt-12 pt-8 border-t border-stone-200 text-center">
           <p className="text-sm text-stone-400">
-            &copy; {new Date().getFullYear()} GreenCart Furniture. All Rights Reserved.
+            {/* MODIFIED: Updated the copyright statement */}
+            &copy; {new Date().getFullYear()} Studio Oak. All Rights Reserved.
           </p>
         </div>
       </div>

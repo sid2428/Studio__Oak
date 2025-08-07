@@ -1,34 +1,44 @@
-import React from 'react'
-import { categories } from '../assets/assets'
-import { useAppContext } from '../context/AppContext'
+import React from 'react';
+import { categories } from '../assets/assets';
+import { useAppContext } from '../context/AppContext';
 
-const Categories = () => {
-
-    const {navigate} = useAppContext()
+const CategoryCard = ({ category }) => {
+  const { navigate } = useAppContext();
 
   return (
-    <div className='mt-16'>
-      <p className='text-2xl md:text-3xl font-stretch-75%'>Categories</p>
-      <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-4 mt-6 gap-7'>
-
-        {categories.map((category, index)=>(
-            <div key={index} className='group cursor-pointer py-5 px-3 gap-2 rounded-lg flex flex-col justify-center items-center'
-            style={{backgroundColor: category.bgColor}}
-            onClick={()=>{
-                navigate(`/products/${category.path.toLowerCase()}`);
-                scrollTo(0,0)
-            }}
-            >
-                <img src={category.image} alt={category.text} className='group-hover:scale-108 transition max-w-48'/>
-                <p className='text-sm font-medium'>{category.text}</p>
-            </div>
-                    
-        ))}
-
-        
+    <div
+      className="category-showroom-card group"
+      onClick={() => {
+        navigate(`/products/${category.path}`);
+        window.scrollTo(0, 0);
+      }}
+    >
+      <img src={category.image} alt={category.text} className="card-image" />
+      <div className="card-overlay-permanent"></div>
+      <div className="card-content">
+        <h3 className="card-title">{category.text}</h3>
+        <p className="arrow-link">View Collection &rarr;</p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Categories
+const Categories = () => {
+  return (
+    <div className='mt-24'>
+      <div className='text-center mb-12'> {/* Increased bottom margin for better spacing */}
+        <h2 className='text-3xl md:text-4xl font-bold text-stone-800 font-serif'>Design for Every Corner</h2>
+        <p className='text-lg text-stone-500 mt-2'>Discover collections curated for your unique space.</p>
+      </div>
+
+      {/* The grid now directly displays all categories without any filters */}
+      <div className="showroom-grid">
+        {categories.map((category) => (
+          <CategoryCard key={category.path} category={category} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Categories;

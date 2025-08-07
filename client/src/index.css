@@ -1,51 +1,84 @@
+/* --- FONT IMPORTS --- */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+/* --- TAILWIND IMPORTS --- */
 @import "tailwindcss";
 
-*{
+/* --- BASE STYLES --- */
+* {
   font-family: "Outfit", sans-serif;
 }
 
+/* --- THEME DEFINITION --- */
 @theme {
-  --color-primary: #374151; /* A darker, more elegant primary color */
-  --color-primary-dull: #1f2937;
-   /* -- NEW THEME -- */
-   --color-background: #FDFDFD; /* Soft, almost white cream */
-  --color-text-primary: #5D4037; /* Rich, dark brown for text */
-  --color-text-secondary: #8D6E63; /* Lighter brown for subtitles */
-  --color-accent: #A1887F; /* Muted brown for buttons and links */
-  --color-accent-hover: #8D6E63; /* Darker accent for hover effects */
-  --color-border: #E0E0E0; /* Soft gray for borders */
-
-  --color-primary: #815a58;
-  --color-primary-dull: #6c4c4a;
+  /* This is the single source of truth for your color palette */
+  --color-primary: #815a58;       /* Primary Brown for major UI elements */
+  --color-primary-dull: #6c4c4a;  /* Darker shade for hover states */
+  --color-accent: #d97706;        /* Amber/Orange for "Add" buttons and highlights */
+  --color-accent-hover: #b45309;  /* Darker amber for hover states */
+  --color-background: #FDFDFD;    /* Main site background */
+  --color-text-primary: #374151;  /* Dark gray for primary text */
+  --color-text-secondary: #6b7280;/* Lighter gray for subtitles */
+  --color-border: #E5E7EB;        /* Soft gray for borders */
 }
 
-.no-scrollbar::-webkit-scrollbar{
-  display: none;
-}
-
+/* --- CUSTOM COMPONENTS LAYER --- */
 @layer components {
+
+  /* --- Brand Promise / Moodboard Section --- */
   .brand-promise-moodboard {
     @apply relative w-full py-16 sm:py-24 bg-cover bg-center;
   }
-
   .showcase-container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
-
   .showcase-card {
-    /* More transparent background */
-    @apply bg-white/70; 
-    
-    /* Stronger blur effect for readability */
-    @apply backdrop-blur-xl; 
-
-    /* Other styles for a polished look */
-    @apply rounded-2xl border border-white/25 p-8 sm:p-12 shadow-xl;
+    @apply bg-white/70 backdrop-blur-xl rounded-2xl border border-white/25 p-8 sm:p-12 shadow-xl;
   }
-
   .showcase-card input::placeholder {
     @apply text-stone-500;
+  }
+
+  /* --- Interactive Category Showcase --- */
+  .filter-button {
+    @apply px-5 py-2 rounded-full text-sm font-semibold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all duration-300;
+  }
+  .filter-button.active {
+    @apply bg-stone-800 text-white shadow-md;
+  }
+  .showroom-grid {
+    @apply grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6;
+  }
+  .category-showroom-card {
+    @apply relative rounded-xl overflow-hidden cursor-pointer shadow-lg aspect-square;
+    background-color: #FDFDFD;
+  }
+  .category-showroom-card .card-image {
+    @apply w-full h-full object-contain p-4 transition-transform duration-500 ease-in-out group-hover:scale-105;
+  }
+  .category-showroom-card::after {
+    content: '';
+    @apply absolute inset-0 rounded-xl pointer-events-none;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+  }
+  .category-showroom-card .card-overlay-permanent {
+    @apply absolute inset-0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent 50%);
+  }
+  .category-showroom-card .card-content {
+    @apply absolute bottom-0 left-0 p-4 w-full text-white;
+  }
+  .category-showroom-card .card-title {
+    font-family: 'Playfair Display', serif;
+    @apply text-xl font-bold transition-transform duration-300 group-hover:-translate-y-1;
+  }
+  .category-showroom-card .arrow-link {
+    @apply text-xs mt-0.5 opacity-0 transition-opacity duration-300 group-hover:opacity-100;
+  }
+
+  /* --- UTILITIES --- */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }

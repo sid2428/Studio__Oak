@@ -133,54 +133,45 @@ export const assets = {
 };
 
 export const categories = [
-
-    {
-    text: "living Room",
-    path: "living Room",
+  {
+    text: "Living Room",
+    path: "living-room",
     image: living_room,
-    bgColor: "#F1E3F9",
   },
   {
     text: "Bedroom",
-    path: "Bedroom",
+    path: "bedroom",
     image: bedroom,
-    bgColor: "#F0F5DE",
   },
   {
-    text: "Dining room",
-    path: "Dining room",
+    text: "Dining Room",
+    path: "dining-room",
     image: dining_room,
-    bgColor: "#E1F5EC",
   },
   {
     text: "Kitchen",
-    path: "Kitchen",
+    path: "kitchen",
     image: kitchen,
-    bgColor: "#FEE6CD",
   },
   {
     text: "Office",
-    path: "Office",
+    path: "office",
     image: office,
-    bgColor: "#FEE6CD",
   },
   {
     text: "Outdoor",
-    path: "Outdoor",
+    path: "outdoor",
     image: outdoor,
-    bgColor: "#E1F5EC",
   },
   {
     text: "Kid's Room",
-    path: "Kid's Room",
+    path: "kids-room",
     image: kid_room,
-    bgColor: "#F0F5DE",
   },
   {
-    text: "Decor Accent Furniture",
-    path: "Decor Accent Furniture",
+    text: "Decor & Accent",
+    path: "decor-accent-furniture",
     image: decore,
-    bgColor: "#F1E3F9",
   },
 ];
 
@@ -190,7 +181,7 @@ export const footerLinks = [
     title: "Shop",
     links: [
       { text: "All Products", url: "/products" },
-      { text: "Living Room", url: "/products/Living Room" }, // Corrected path
+      { text: "Living Room", url: "/products/living Room" }, // Corrected path
       { text: "Bedroom", url: "/products/bedroom" },       // Corrected path
       { text: "Dining", url: "/products/dining-room" },     // Corrected path
     ],
