@@ -128,6 +128,7 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
+
     // Get Cart Item Count
     const getCartCount = () => {
         let totalCount = 0;
