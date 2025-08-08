@@ -90,3 +90,15 @@ export const updateStock = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
+
+// Increment Cart Count: /api/product/increment-cart-count
+export const incrementCartCount = async (req, res) => {
+    try {
+        const { id } = req.body;
+        await Product.findByIdAndUpdate(id, { $inc: { timesInCart: 1 } });
+        res.json({ success: true, message: "Cart count updated" });
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message });
+    }
+}

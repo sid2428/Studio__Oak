@@ -74,7 +74,7 @@ export const AppContextProvider = ({ children }) => {
 
 
     // Add Product to Cart
-    const addToCart = (itemId) => {
+    const addToCart = async (itemId) => {
         let cartData = structuredClone(cartItems);
 
         if (cartData[itemId]) {
@@ -85,6 +85,14 @@ export const AppContextProvider = ({ children }) => {
         setCartItems(cartData);
         toast.success("Added to Cart");
         updateProductStock(itemId, 1);
+        try {
+            const { data } = await axios.post('/api/product/increment-cart-count', { id: itemId });
+            if (data.success) {
+                fetchProducts(); // Refresh products to get the latest timesInCart count
+            }
+        } catch (error) {
+            toast.error("Failed to update best seller status");
+        }
     }
 
     // Update Cart Item Quantity
