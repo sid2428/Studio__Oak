@@ -8,7 +8,8 @@ const productSchema = new mongoose.Schema({
     image: {type: Array, required: true },
     category: {type: String, required: true },
     inStock: {type: Boolean, default: true },
-    stock: {type: Number, default: 0}, // Add this new field
+    stock: {type: Number, default: 100},
+    timesInCart: {type: Number, default: 100}, // New field
 }, { timestamps: true})
 
 const Product = mongoose.models.product || mongoose.model('product', productSchema)
