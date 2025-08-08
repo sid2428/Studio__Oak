@@ -13,7 +13,7 @@ Welcome to **Studio Oak**, where timeless furniture meets modern e-commerce. Thi
       - **🔐 User Authentication:** Secure user registration and login.
       - **🏠 Address Management:** Users can add and select shipping addresses.
       - **📦 Order History:** View past orders and their status.
-      - **💳 Payment Integration:** Supports both Cash on Delivery (COD) and online payments via Stripe.
+      - **💳 Payment Integration:** Supports Cash on Delivery (COD) .
       - **📱 Responsive Design:** A beautiful and functional experience on any device.
 
   - **Admin Panel:**
