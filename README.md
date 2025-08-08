@@ -29,7 +29,6 @@ Welcome to **Studio Oak**, where timeless furniture meets modern e-commerce. Thi
       - **🔐 Authentication & Authorization:** JWT-based authentication for users and admins.
       - **📦 API Endpoints:** A comprehensive set of APIs for managing products, users, carts, and orders.
       - **☁️ Cloud Image Uploads:** Product images are uploaded to and served from Cloudinary.
-      - **💳 Stripe Integration:** Securely process online payments with Stripe webhooks for verification.
       - **🍃 MongoDB Database:** A flexible and scalable NoSQL database for all application data.
 
 ## 🛠️ Tech Stack
@@ -39,7 +38,6 @@ Welcome to **Studio Oak**, where timeless furniture meets modern e-commerce. Thi
   - **Database:** MongoDB
   - **Authentication:** JWT, bcryptjs
   - **Image Storage:** Cloudinary
-  - **Payment Gateway:** Stripe
 
 ## 🚀 Getting Started
 
@@ -50,7 +48,6 @@ To get a local copy up and running, follow these simple steps.
   - Node.js and npm (or yarn)
   - MongoDB account and connection URI
   - Cloudinary account credentials
-  - Stripe account credentials
 
 ### Installation
 
@@ -90,10 +87,6 @@ To get a local copy up and running, follow these simple steps.
     CLOUDINARY_CLOUD_NAME=cloudinary_cloud_name
     CLOUDINARY_API_KEY=cloudinary_api_key
     CLOUDINARY_API_SECRET=cloudinary_api_secret
-
-    # Stripe Setup
-    STRIPE_SECRET_KEY=stripe_secret_key
-    STRIPE_WEBHOOK_SECRET=stripe_webhook_secret
 
     # JWT Secret
     JWT_SECRET=a_super_secret_key
