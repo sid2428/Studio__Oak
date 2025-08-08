@@ -10,6 +10,6 @@ productRouter.get('/list', productList);
 productRouter.get('/id', productById);
 productRouter.post('/stock', authSeller, changeStock);
 productRouter.post('/delete', authSeller, deleteProduct);
-productRouter.post('/update-stock', authSeller, updateStock);
+productRouter.post('/update-stock', authSeller, updateStock); // New route for updating stock
 
 export default productRouter;

@@ -10,7 +10,7 @@ const AddProduct = () => {
     const [category, setCategory] = useState('');
     const [price, setPrice] = useState('');
     const [offerPrice, setOfferPrice] = useState('');
-    const [stock, setStock] = useState('');
+    const [stock, setStock] = useState('100'); // Initial stock set to 100
 
     const { axios } = useAppContext();
 
@@ -41,7 +41,7 @@ const AddProduct = () => {
                 setCategory('');
                 setPrice('');
                 setOfferPrice('');
-                setStock('');
+                setStock('100'); // Reset stock to 100
                 setFiles([]);
             } else {
                 toast.error(data.message);
@@ -49,8 +49,7 @@ const AddProduct = () => {
         } catch (error) {
             toast.error(error.message);
         }
-    };
-
+    }
     return (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-semibold mb-6">Add New Product</h2>
