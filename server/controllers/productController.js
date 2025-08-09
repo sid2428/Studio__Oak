@@ -102,3 +102,24 @@ export const incrementCartCount = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
+
+export const increaseStock = async (req, res) => {
+    try {
+        const { id, quantity } = req.body;
+        const product = await Product.findById(id);
+
+        if (!product) {
+            return res.json({ success: false, message: "Product not found" });
+        }
+
+        product.stock += quantity;
+        if (product.stock > 0) {
+            product.inStock = true;
+        }
+        await product.save();
+        res.json({ success: true, message: "Stock Increased" });
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message });
+    }
+}

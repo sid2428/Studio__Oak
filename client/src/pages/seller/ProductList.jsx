@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAppContext } from '../../context/AppContext'
 import toast from 'react-hot-toast'
 
 const ProductList = () => {
-    const { products, currency, axios, fetchProducts } = useAppContext();
+    const { products, currency, axios, fetchProducts, increaseStock } = useAppContext();
+    const [stockInputs, setStockInputs] = useState({});
 
     const deleteProduct = async (id) => {
         try {
@@ -16,6 +17,24 @@ const ProductList = () => {
             }
         } catch (error) {
             toast.error(error.message);
+        }
+    };
+
+    const handleStockChange = (id, value) => {
+        setStockInputs({
+            ...stockInputs,
+            [id]: value
+        });
+    };
+
+    const handleIncreaseStock = (id) => {
+        const quantity = parseInt(stockInputs[id], 10);
+        if (!isNaN(quantity) && quantity > 0) {
+            increaseStock(id, quantity);
+            setStockInputs({
+                ...stockInputs,
+                [id]: ''
+            });
         }
     };
   
@@ -56,7 +75,17 @@ const ProductList = () => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button onClick={() => deleteProduct(product._id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            value={stockInputs[product._id] || ''}
+                                            onChange={(e) => handleStockChange(product._id, e.target.value)}
+                                            className="w-20 px-2 py-1 border border-gray-300 rounded-md"
+                                            placeholder="Qty"
+                                        />
+                                        <button onClick={() => handleIncreaseStock(product._id)} className="text-green-600 hover:text-green-900">Increase Stock</button>
+                                        <button onClick={() => deleteProduct(product._id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

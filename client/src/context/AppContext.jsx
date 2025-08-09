@@ -63,15 +63,15 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
-    const updateProductStock = async (itemId, quantity) => {
+    const increaseStock = async (itemId, quantity) => {
         try {
-            await axios.post('/api/product/update-stock', { id: itemId, quantity });
+            await axios.post('/api/product/increase-stock', { id: itemId, quantity });
             fetchProducts();
+            toast.success("Stock Increased");
         } catch (error) {
-            toast.error("Failed to update stock");
+            toast.error("Failed to increase stock");
         }
     };
-
 
     // Add Product to Cart
     const addToCart = async (itemId) => {
@@ -92,7 +92,6 @@ export const AppContextProvider = ({ children }) => {
         }
         setCartItems(cartData);
         toast.success("Added to Cart");
-        updateProductStock(itemId, 1);
         try {
             const { data } = await axios.post('/api/product/increment-cart-count', { id: itemId });
             if (data.success) {
@@ -114,24 +113,16 @@ export const AppContextProvider = ({ children }) => {
         }
 
         let cartData = structuredClone(cartItems);
-        const quantityDifference = quantity - oldQuantity;
-
         cartData[itemId] = quantity;
         setCartItems(cartData)
         toast.success("Cart Updated")
-
-        if (quantityDifference !== 0) {
-            updateProductStock(itemId, quantityDifference);
-        }
     }
 
 
     // Remove Product from Cart
     const removeFromCart = (itemId) => {
         let cartData = structuredClone(cartItems);
-        let quantityReduced = 0;
         if (cartData[itemId]) {
-            quantityReduced = 1;
             cartData[itemId] -= 1;
             if (cartData[itemId] === 0) {
                 delete cartData[itemId];
@@ -139,9 +130,6 @@ export const AppContextProvider = ({ children }) => {
         }
         toast.success("Removed from Cart")
         setCartItems(cartData)
-        if(quantityReduced > 0){
-            updateProductStock(itemId, -1);
-        }
     }
 
 
@@ -193,7 +181,7 @@ export const AppContextProvider = ({ children }) => {
 
     const value = {
         navigate, user, setUser, setIsSeller, isSeller,
-        showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems
+        showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems, increaseStock
     }
 
     return <AppContext.Provider value={value}>
