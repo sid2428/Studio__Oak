@@ -16,7 +16,12 @@ import sustainable_icon from "./sustainable_icon.svg";
 import assembly_icon from "./assembly_icon.svg";
 import subtle_pattern from "./subtle_pattern.svg";
 import box_icon from "./box_icon.svg";
-import moodboard_bg from "./moodboard_bg.png"; 
+import moodboard_bg from "./moodboard_bg.png";
+import remove_icon from "./remove_icon.svg";
+import arrow_right_icon_colored from "./arrow_right_icon_colored.svg";
+import add_icon from "./add_icon.svg";
+import product_list_icon from "./product_list_icon.svg";
+import order_icon from "./order_icon.svg";
 
 
 export const assets = {
@@ -38,6 +43,11 @@ export const assets = {
   assembly_icon,
   subtle_pattern,
   moodboard_bg,
+  remove_icon,
+  arrow_right_icon_colored,
+  add_icon,
+  product_list_icon,
+  order_icon,
 };
 
 export const categories = [
