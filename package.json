@@ -1,0 +1,18 @@
+{
+    "name": "studio-oak",
+    "version": "1.0.0",
+    "description": "Studio Oak - Timeless Furniture",
+    "main": "server/server.js",
+    "scripts": {
+      "start": "node server/server.js",
+      "server": "nodemon server/server.js",
+      "client": "npm run dev --prefix client",
+      "dev": "concurrently \"npm run server\" \"npm run client\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "concurrently": "^7.0.0"
+    }
+  }
