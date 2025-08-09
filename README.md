@@ -77,8 +77,8 @@ To get a local copy up and running, follow these simple steps.
     NODE_ENV=development
 
     # Admin Credentials
-    SELLER_EMAIL=admin_email@example.com
-    SELLER_PASSWORD=admin_password
+    SELLER_EMAIL=adminpanel@example.com
+    SELLER_PASSWORD=admin
 
     # MongoDB Setup
     MONGODB_URI=mongodb_connection_string
