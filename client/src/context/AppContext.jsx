@@ -75,6 +75,14 @@ export const AppContextProvider = ({ children }) => {
 
     // Add Product to Cart
     const addToCart = async (itemId) => {
+        const product = products.find((p) => p._id === itemId);
+        const currentQuantityInCart = cartItems[itemId] || 0;
+
+        if (product && currentQuantityInCart + 1 > product.stock) {
+            toast.error("Cannot add more items than available in stock");
+            return;
+        }
+
         let cartData = structuredClone(cartItems);
 
         if (cartData[itemId]) {
@@ -97,8 +105,15 @@ export const AppContextProvider = ({ children }) => {
 
     // Update Cart Item Quantity
     const updateCartItem = (itemId, quantity) => {
+        const product = products.find((p) => p._id === itemId);
+        const oldQuantity = cartItems[itemId] || 0;
+
+        if (product && quantity > product.stock + oldQuantity) {
+            toast.error("Cannot add more items than available in stock");
+            return;
+        }
+
         let cartData = structuredClone(cartItems);
-        const oldQuantity = cartData[itemId] || 0;
         const quantityDifference = quantity - oldQuantity;
 
         cartData[itemId] = quantity;
@@ -109,6 +124,7 @@ export const AppContextProvider = ({ children }) => {
             updateProductStock(itemId, quantityDifference);
         }
     }
+
 
     // Remove Product from Cart
     const removeFromCart = (itemId) => {
