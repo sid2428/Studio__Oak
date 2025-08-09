@@ -79,7 +79,7 @@ export const AppContextProvider = ({ children }) => {
         const currentQuantityInCart = cartItems[itemId] || 0;
 
         if (product && currentQuantityInCart + 1 > product.stock) {
-            toast.error("Cannot add more items than available in stock");
+            toast.error(`We have only ${product.stock} items in stock right now!`);
             return;
         }
 
@@ -109,7 +109,7 @@ export const AppContextProvider = ({ children }) => {
         const oldQuantity = cartItems[itemId] || 0;
 
         if (product && quantity > product.stock + oldQuantity) {
-            toast.error("Cannot add more items than available in stock");
+            toast.error(`We have only ${product.stock} items in stock right now!`);
             return;
         }
 
@@ -159,7 +159,7 @@ export const AppContextProvider = ({ children }) => {
         let totalAmount = 0;
         for (const items in cartItems) {
             let itemInfo = products.find((product) => product._id === items);
-            if (cartItems[items] > 0) {
+            if (itemInfo && cartItems[items] > 0) {
                 totalAmount += itemInfo.offerPrice * cartItems[items]
             }
         }
