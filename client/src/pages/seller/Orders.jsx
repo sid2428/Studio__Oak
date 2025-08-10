@@ -2,15 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import toast from 'react-hot-toast';
 
+// Icons for a cleaner UI
+const ChevronDownIcon = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+);
+
+const UserIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+);
+
 const Orders = () => {
     const { currency, axios } = useAppContext();
     const [orders, setOrders] = useState([]);
+    const [expandedOrderId, setExpandedOrderId] = useState(null);
 
     const fetchOrders = async () => {
         try {
             const { data } = await axios.get('/api/order/seller');
             if (data.success) {
-                // Filter out orders where any item's product is null to prevent crashes
                 const validOrders = data.orders.filter(order => 
                     order.items.every(item => item.product)
                 );
@@ -28,53 +39,74 @@ const Orders = () => {
         fetchOrders();
     }, []);
 
+    const toggleOrderDetails = (orderId) => {
+        setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
+    };
+
     return (
-        <div>
+        <div className="bg-gray-50 p-6 rounded-lg shadow-md min-h-screen">
             <h2 className="text-3xl font-bold text-gray-800 mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
                 Customer Orders
             </h2>
             {orders.length > 0 ? (
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {orders.map((order) => (
-                        <div key={order._id} className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                            <div className="flex flex-wrap justify-between items-start mb-4">
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-800">Order #{order._id.slice(-6)}</h3>
-                                    <p className="text-sm text-gray-500">Date: {new Date(order.createdAt).toLocaleDateString()}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xl font-bold text-primary">{currency}{order.amount}</p>
-                                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${order.isPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                        {order.isPaid ? "Paid" : "Pending"}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <h4 className="font-semibold text-gray-700 mb-2">Items</h4>
-                                    <ul className="space-y-2">
-                                        {order.items.map((item) => (
-                                            <li key={item.product._id} className="flex items-center gap-4">
-                                                <img src={item.product.image[0]} alt={item.product.name} className="w-12 h-12 rounded object-cover border border-gray-200" />
-                                                <div>
-                                                    <p className="font-medium text-gray-900">{item.product.name}</p>
-                                                    <p className="text-sm text-gray-500">Qty: {item.quantity || "1"}</p>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-gray-700 mb-2">Shipping Address</h4>
-                                    <div className="text-sm text-gray-600">
-                                        <p className="font-medium">{order.address.firstName} {order.address.lastName}</p>
-                                        <p>{order.address.street}, {order.address.city}</p>
-                                        <p>{order.address.state}, {order.address.zipcode}, {order.address.country}</p>
-                                        <p>Phone: {order.address.phone}</p>
+                        <div key={order._id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                            {/* Order Summary Header */}
+                            <div className="p-4 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleOrderDetails(order._id)}>
+                                <div className="flex flex-wrap justify-between items-center">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2 text-gray-700">
+                                            <UserIcon />
+                                            <span className="font-semibold text-lg">{order.address.firstName} {order.address.lastName}</span>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <p><strong>Order ID:</strong> #{order._id.slice(-6)}</p>
+                                            <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right flex items-center gap-4">
+                                        <div className="flex flex-col items-end">
+                                            <p className="text-xl font-bold text-primary">{currency}{order.amount}</p>
+                                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${order.isPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                {order.isPaid ? "Paid" : "Pending"}
+                                            </span>
+                                        </div>
+                                        <ChevronDownIcon className={`w-6 h-6 text-gray-500 transition-transform duration-300 ${expandedOrderId === order._id ? 'transform rotate-180' : ''}`} />
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Collapsible Order Details */}
+                            {expandedOrderId === order._id && (
+                                <div className="p-4 border-t border-gray-200 bg-gray-50">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <h4 className="font-semibold text-gray-800 mb-3">Order Items</h4>
+                                            <ul className="space-y-3">
+                                                {order.items.map((item) => (
+                                                    <li key={item.product._id} className="flex items-center gap-4">
+                                                        <img src={item.product.image[0]} alt={item.product.name} className="w-14 h-14 rounded-md object-cover border border-gray-200" />
+                                                        <div>
+                                                            <p className="font-medium text-gray-900">{item.product.name}</p>
+                                                            <p className="text-sm text-gray-500">Qty: {item.quantity || "1"} · Price: {currency}{item.product.offerPrice}</p>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-800 mb-3">Shipping Address</h4>
+                                            <div className="text-sm text-gray-700 leading-relaxed">
+                                                <p className="font-medium">{order.address.firstName} {order.address.lastName}</p>
+                                                <p>{order.address.street}, {order.address.city}</p>
+                                                <p>{order.address.state}, {order.address.zipcode}, {order.address.country}</p>
+                                                <p className="mt-2"><strong>Phone:</strong> {order.address.phone}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
