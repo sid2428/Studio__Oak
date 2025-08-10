@@ -1,21 +1,26 @@
 import React from "react";
 import { useAppContext } from "../context/AppContext";
 
-// An SVG component for the star icon to allow for color changes
-// const StarIcon = ({ className }) => (
-//   <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-//     <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.007z" clipRule="evenodd"/>
-//   </svg>
-// );
-
 const ProductCard = ({ product }) => {
   const { currency, addToCart, removeFromCart, cartItems, navigate } = useAppContext();
+
+  // Determine if product is out of stock or low in stock
+  const isOutOfStock = product.stock <= 0;
+  const isLowStock = product.stock > 0 && product.stock <= 5;
 
   return (
     product && (
       <div
-        className="group border border-border rounded-lg p-3 bg-white w-full transition-shadow duration-300 hover:shadow-xl flex flex-col justify-between"
+        className={`group border border-border rounded-lg p-3 bg-white w-full transition-shadow duration-300 hover:shadow-xl flex flex-col justify-between ${isOutOfStock ? 'opacity-70' : ''}`}
       >
+        {/* Out of Stock and Low Stock Badges */}
+        {isOutOfStock && (
+            <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">Out of Stock</span>
+        )}
+        {isLowStock && (
+            <span className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">Only {product.stock} left!</span>
+        )}
+
         {/* Clickable area for product details */}
         <div onClick={() => { navigate(`/products/${product.category.toLowerCase()}/${product._id}`); scrollTo(0, 0); }} className="cursor-pointer">
           <div className="flex items-center justify-center px-2 aspect-square">
@@ -28,12 +33,6 @@ const ProductCard = ({ product }) => {
           <div className="text-sm mt-2">
             <p className="text-text-secondary">{product.category}</p>
             <p className="text-text-primary font-medium text-lg truncate w-full">{product.name}</p>
-            {/* <div className="flex items-center gap-0.5">
-              {Array(5).fill("").map((_, i) => (
-                  <StarIcon key={i} className={`md:w-4 w-3.5 ${i < 4 ? 'text-[#e5c100]' : 'text-gray-300'}`} />
-              ))}
-              <p className="text-text-secondary ml-1">(4)</p>
-            </div> */}
           </div>
         </div>
 
@@ -51,35 +50,44 @@ const ProductCard = ({ product }) => {
           </div>
           
           <div onClick={(e) => { e.stopPropagation(); }}>
-            {!cartItems[product._id] ? (
-              <button
-                className="px-4 py-1.5 bg-[#815a58] text-white rounded-md cursor-pointer hover:bg-[#6c4c4a] transition-colors text-sm font-semibold"
-                onClick={() => addToCart(product._id)}
-              >
-                Add
-              </button>
+            {/* Logic to show add/remove buttons or 'Out of Stock' based on status */}
+            {!isOutOfStock ? (
+                !cartItems[product._id] ? (
+                <button
+                    className="px-4 py-1.5 bg-[#815a58] text-white rounded-md cursor-pointer hover:bg-[#6c4c4a] transition-colors text-sm font-semibold"
+                    onClick={() => addToCart(product._id)}
+                >
+                    Add
+                </button>
+                ) : (
+                <div className="flex items-center justify-center gap-2 w-auto h-8 bg-gray-100 rounded-full select-none px-1">
+                    <button
+                    onClick={() => { removeFromCart(product._id); }}
+                    className="cursor-pointer text-lg px-2 text-[#815a58]"
+                    >
+                    -
+                    </button>
+                    <span className="w-5 text-center text-base text-text-primary">
+                    {cartItems[product._id]}
+                    </span>
+                    <button
+                    onClick={() => { addToCart(product._id); }}
+                    className="cursor-pointer text-lg px-2 text-[#815a58]"
+                    >
+                    +
+                    </button>
+                </div>
+                )
             ) : (
-              <div className="flex items-center justify-center gap-2 w-auto h-8 bg-gray-100 rounded-full select-none px-1">
                 <button
-                  onClick={() => { removeFromCart(product._id); }}
-                  className="cursor-pointer text-lg px-2 text-[#815a58]"
+                    disabled
+                    className="px-4 py-1.5 bg-gray-400 text-white rounded-md cursor-not-allowed text-sm font-semibold"
                 >
-                  -
+                    Out of Stock
                 </button>
-                <span className="w-5 text-center text-base text-text-primary">
-                  {cartItems[product._id]}
-                </span>
-                <button
-                  onClick={() => { addToCart(product._id); }}
-                  className="cursor-pointer text-lg px-2 text-[#815a58]"
-                >
-                  +
-                </button>
-              </div>
             )}
           </div>
         </div>
-
       </div>
     )
   );

@@ -23,6 +23,7 @@ const ProductCategory = () => {
       )}
       {filteredProducts.length > 0 ? (
         <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6 mt-6'>
+            {/* MODIFIED: Removed the filter to show all products in the category */}
             {filteredProducts.map((product)=>(
                 <ProductCard key={product._id} product={product}/>
             ))}
