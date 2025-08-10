@@ -123,3 +123,19 @@ export const increaseStock = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
+
+// new function to decrease stock
+export const decreaseProductStock = async (id, quantity) => {
+    try {
+        const product = await Product.findById(id);
+        if (product) {
+            product.stock -= quantity;
+            if (product.stock <= 0) {
+                product.inStock = false;
+            }
+            await product.save();
+        }
+    } catch (error) {
+        console.error(`Error decreasing stock for product ${id}: ${error.message}`);
+    }
+}
