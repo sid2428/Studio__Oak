@@ -86,25 +86,26 @@ const Navbar = () => {
   return (
     <>
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-lg border-b border-stone-200">
-        <nav className="w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
+        {/* The main change is adding justify-between to this nav element */}
+        <nav className="relative w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-8 flex-1 justify-start">
             <NavLink to="/" className={linkStyles}>Home</NavLink>
             <NavLink to="/products" className={linkStyles}>Shop</NavLink>
             <NavLink to="/faq" className={linkStyles}>Contact Us</NavLink>
             <NavLink to="/admin" className={linkStyles}>Become an Admin</NavLink>
           </div>
 
-          {/* Brand Name */}
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <NavLink to="/" style={{ fontFamily: "'Playfair Display', serif" }} className="text-4xl text-stone-800 tracking-wide">
+          {/* Brand Name (Centered on Desktop, Left on Mobile) */}
+          <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex-shrink-0">
+            <NavLink to="/" style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-4xl text-stone-800 tracking-wide">
               Studio Oak
             </NavLink>
           </div>
 
-          {/* Desktop Icons */}
-          <div className="hidden md:flex items-center gap-6">
+          {/* Icons Section */}
+          <div className="flex items-center gap-4 lg:gap-6 flex-1 justify-end">
             <div onClick={() => navigate('/cart')} className="relative cursor-pointer transition-transform duration-300 hover:scale-110">
               <span className="text-stone-800"><Icons.ShoppingCart /></span>
               {getCartCount() > 0 && 
@@ -114,15 +115,14 @@ const Navbar = () => {
               }
             </div>
 
+            {/* User Icon and Dropdown */}
             {!user ? (
-                <div className="relative" ref={profileDropdownRef}>
-                 <button
+                <button
                     onClick={() => setShowUserLogin(true)}
                     className="focus:outline-none transition-transform duration-300 hover:scale-110 p-1"
-                  >
+                >
                     <span className="text-stone-800"><Icons.User /></span>
-                  </button>
-                </div>
+                </button>
             ) : (
               <div className="relative" ref={profileDropdownRef}>
                 <button
@@ -145,35 +145,19 @@ const Navbar = () => {
                 )}
               </div>
             )}
-            <button onClick={() => setDrawerOpen(!drawerOpen)} aria-label="Menu" className="p-1 text-stone-800 md:hidden">
+            
+            {/* Mobile Menu Trigger */}
+            <button onClick={() => setDrawerOpen(!drawerOpen)} aria-label="Menu" className="p-1 text-stone-800 lg:hidden">
                 <Icons.Menu />
             </button>
           </div>
-
-            {/* Mobile Layout */}
-            <div className="md:hidden flex items-center justify-between w-full">
-                <div></div> 
-                <div className="flex items-center gap-4">
-                    <div onClick={() => navigate('/cart')} className="relative cursor-pointer">
-                        <span className="text-stone-800"><Icons.ShoppingCart /></span>
-                        {getCartCount() > 0 &&
-                            <span className="absolute -top-1 -right-2 text-xs text-white bg-stone-800 font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                {getCartCount()}
-                            </span>
-                        }
-                    </div>
-                    <button onClick={() => setDrawerOpen(!drawerOpen)} aria-label="Menu" className="p-1 text-stone-800">
-                        <Icons.Menu />
-                    </button>
-                </div>
-            </div>
         </nav>
       </header>
 
       {/* Mobile Drawer */}
       <div
         ref={mobileDrawerRef}
-        className={`fixed top-0 right-0 h-full w-64 bg-stone-50 shadow-xl transition-transform duration-300 ease-in-out z-40 md:hidden ${
+        className={`fixed top-0 right-0 h-full w-64 bg-stone-50 shadow-xl transition-transform duration-300 ease-in-out z-40 lg:hidden ${
           drawerOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

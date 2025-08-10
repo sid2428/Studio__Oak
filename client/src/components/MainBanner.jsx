@@ -1,50 +1,41 @@
-import React, { useState, useEffect, useRef } from 'react'; // NEW: Import useEffect and useRef
+import React, { useState, useEffect, useRef } from 'react';
 import { assets } from '../assets/assets';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 
 const MainBanner = () => {
-  // NEW: Get products list from context
   const { setSearchQuery, navigate, products } = useAppContext();
   const [query, setQuery] = useState('');
-  // NEW: State to hold the list of suggestions
   const [suggestions, setSuggestions] = useState([]);
-  // NEW: Ref to detect clicks outside the search component
   const searchContainerRef = useRef(null);
 
   const searchHandler = (e) => {
     e.preventDefault();
     setSearchQuery(query);
-    setSuggestions([]); // Clear suggestions on search
+    setSuggestions([]);
     navigate('/products');
   };
 
-  // NEW: This function runs every time the user types in the search bar
   const handleInputChange = (e) => {
     const value = e.target.value;
     setQuery(value);
 
     if (value.length > 0) {
-      // Filter products based on the input
       const filteredSuggestions = products.filter(product =>
         product.name.toLowerCase().includes(value.toLowerCase())
       );
       setSuggestions(filteredSuggestions);
     } else {
-      // Clear suggestions if the input is empty
       setSuggestions([]);
     }
   };
 
-  // NEW: This function runs when a user clicks on a suggestion
   const handleSuggestionClick = (product) => {
     setQuery(product.name);
-    setSuggestions([]); // Hide suggestions list
-    // Navigate directly to the product's detail page
+    setSuggestions([]);
     navigate(`/products/${product.category.toLowerCase()}/${product._id}`);
   };
 
-  // NEW: This effect handles closing the suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
@@ -57,26 +48,35 @@ const MainBanner = () => {
     };
   }, []);
 
-
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden">
+    <div className="relative w-full rounded-2xl overflow-hidden h-[75vh] lg:h-[85vh]">
+      {/* Desktop Image (Hidden on mobile) */}
       <img
         src={assets.main_banner}
         alt="banner"
-        className="w-full h-full object-cover rounded-2xl"
+        className="hidden md:block w-full h-full object-cover object-center rounded-2xl"
       />
-      <div className="absolute inset-0 bg-black/25 rounded-2xl"></div>
-      <div className="absolute inset-0 flex flex-col items-center justify-start text-center text-white p-4 pt-32 md:pt-48">
+      {/* Mobile Image (Visible on mobile) */}
+      <img
+        src={assets.main_banner_mobile || assets.main_banner}
+        alt="banner"
+        className="block md:hidden w-full h-full absolute inset-0 object-cover object-center rounded-2xl"
+      />
 
-        {/* NEW: Added a ref to the form's parent div */}
+      <div className="absolute inset-0 bg-black/30 rounded-2xl"></div>
+      
+      {/* Content Wrapper: Uses flexbox to vertically center all content */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4">
+
+        {/* Search Bar is now the first element */}
         <div ref={searchContainerRef} className="relative w-full max-w-lg mb-8 animate-fadeInUp">
           <form onSubmit={searchHandler}>
             <input
               type="text"
               placeholder="Search for products..."
               value={query}
-              onChange={handleInputChange} // NEW: Changed to our new handler
-              autoComplete="off" // NEW: Prevents browser's default suggestions
+              onChange={handleInputChange}
+              autoComplete="off"
               className="w-full pl-5 pr-12 py-3 sm:py-4 rounded-full bg-white/20 backdrop-blur-md text-sm sm:text-base text-white placeholder-white/80 border border-white/40 focus:outline-none focus:border-white focus:ring-2 focus:ring-white/50 transition-all"
             />
             <button type="submit" aria-label="Search">
@@ -87,7 +87,6 @@ const MainBanner = () => {
             </button>
           </form>
 
-          {/* NEW: This block displays the suggestions dropdown */}
           {suggestions.length > 0 && (
             <ul className="absolute top-full mt-2 w-full bg-white/20 backdrop-blur-md text-left rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
               {suggestions.map((product) => (
@@ -109,7 +108,8 @@ const MainBanner = () => {
         <p className="text-md sm:text-lg md:text-xl lg:text-2xl font-light mb-8 max-w-2xl animate-fadeInUp delay-200">
           Discover a curated collection of our finest products and exclusive deals.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 mt-4 animate-fadeInUp delay-400">
+        
+        <div className="flex flex-col sm:flex-row gap-4 animate-fadeInUp delay-400">
           <Link
             to="/products"
             className="

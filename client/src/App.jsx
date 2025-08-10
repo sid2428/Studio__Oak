@@ -27,7 +27,7 @@ const App = () => {
   return (
     <div className='text-default min-h-screen text-gray-700 bg-background'>
 
-     {isAdminPath ? null : <Navbar/>} 
+     {isAdminPath ? null : <Navbar/>}
      {showUserLogin ? <Login/> : null}
 
      <Toaster />

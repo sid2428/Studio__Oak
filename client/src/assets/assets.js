@@ -23,6 +23,8 @@ import add_icon from "./add_icon.svg";
 import product_list_icon from "./product_list_icon.svg";
 import order_icon from "./order_icon.svg";
 
+import main_banner_mobile from "./main_banner_mobile.png";
+
 
 export const assets = {
   logo,
@@ -48,6 +50,7 @@ export const assets = {
   add_icon,
   product_list_icon,
   order_icon,
+  main_banner_mobile,
 };
 
 export const categories = [
