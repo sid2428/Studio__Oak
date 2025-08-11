@@ -87,6 +87,14 @@
     animation: heartbeat 1s ease-in-out;
   }
 
+  .animate-jiggle {
+    animation: jiggle 0.5s ease-in-out;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-in-out;
+  }
+
   @keyframes heartbeat {
     0% {
       transform: scale(1);
@@ -102,6 +110,29 @@
     }
     100% {
       transform: scale(1);
+    }
+  }
+
+  @keyframes jiggle {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-5deg);
+    }
+    75% {
+      transform: rotate(5deg);
+    }
+  }
+
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(5px) scale(0.8);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 }

@@ -24,7 +24,7 @@ const Navbar = () => {
   const profileDropdownRef = useRef(null);
   const mobileDrawerRef = useRef(null);
 
-  const { user, setUser, setShowUserLogin, navigate, getCartCount, axios, setIsChatbotOpen, wishlist } = useAppContext();
+  const { user, setUser, setShowUserLogin, navigate, getCartCount, axios, setIsChatbotOpen, wishlist, isCartUpdated } = useAppContext();
   const [isWishlistUpdated, setIsWishlistUpdated] = useState(false);
   const prevWishlistLength = useRef(wishlist.length);
 
@@ -108,10 +108,10 @@ const Navbar = () => {
               </span>
             </div>
 
-            <div onClick={() => navigate('/cart')} className="relative cursor-pointer transition-transform duration-300 hover:scale-110">
+            <div onClick={() => navigate('/cart')} className={`relative cursor-pointer transition-transform duration-300 hover:scale-110 ${isCartUpdated ? 'animate-jiggle' : ''}`}>
               <span className="text-stone-800"><Icons.ShoppingCart /></span>
               {getCartCount() > 0 && 
-                <span className="absolute -top-1 -right-2 text-xs text-white bg-stone-800 font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                <span className={`absolute -top-1 -right-2 text-xs text-white bg-stone-800 font-bold w-4 h-4 flex items-center justify-center rounded-full ${isCartUpdated ? 'animate-fade-in-up' : ''}`}>
                     {getCartCount()}
                 </span>
               }
