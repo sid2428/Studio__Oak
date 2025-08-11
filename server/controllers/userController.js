@@ -100,3 +100,43 @@ export const logout = async (req, res)=>{
         res.json({ success: false, message: error.message });
     }
 }
+
+// --- Wishlist Controllers ---
+
+// Get Wishlist : /api/user/wishlist
+export const getWishlist = async (req, res) => {
+    try {
+        const user = await User.findById(req.body.userId).populate('wishlist');
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        res.json({ success: true, wishlist: user.wishlist });
+    } catch (error) {
+        console.error("Error fetching wishlist:", error.message);
+        res.status(500).json({ success: false, message: "Server error while fetching wishlist" });
+    }
+};
+
+// Add to Wishlist : /api/user/wishlist/add
+export const addToWishlist = async (req, res) => {
+    try {
+        const { userId, productId } = req.body;
+        await User.findByIdAndUpdate(userId, { $addToSet: { wishlist: productId } });
+        res.json({ success: true, message: "Added to Wishlist" });
+    } catch (error) {
+        console.error("Error adding to wishlist:", error.message);
+        res.status(500).json({ success: false, message: "Server error while adding to wishlist" });
+    }
+};
+
+// Remove from Wishlist : /api/user/wishlist/remove
+export const removeFromWishlist = async (req, res) => {
+    try {
+        const { userId, productId } = req.body;
+        await User.findByIdAndUpdate(userId, { $pull: { wishlist: productId } });
+        res.json({ success: true, message: "Removed from Wishlist" });
+    } catch (error) {
+        console.error("Error removing from wishlist:", error.message);
+        res.status(500).json({ success: false, message: "Server error while removing from wishlist" });
+    }
+};

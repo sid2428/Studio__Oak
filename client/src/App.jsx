@@ -20,7 +20,8 @@ import ProductList from './pages/seller/ProductList';
 import Orders from './pages/seller/Orders';
 import Loading from './components/Loading';
 import Chatbot from './components/Chatbot';
-import SupportRequests from './pages/seller/SupportRequests'; // Import the new component
+import SupportRequests from './pages/seller/SupportRequests';
+import Wishlist from './pages/Wishlist'; // Import the new Wishlist page
 import FAQ from './pages/FAQ';
 
 const App = () => {
@@ -43,6 +44,7 @@ const App = () => {
           <Route path='/products/:category' element={<ProductCategory/>} />
           <Route path='/products/:category/:id' element={<ProductDetails/>} />
           <Route path='/cart' element={<Cart/>} />
+          <Route path='/wishlist' element={<Wishlist/>} /> {/* Added Wishlist Route */}
           <Route path='/add-address' element={<AddAddress/>} />
           <Route path='/my-orders' element={<MyOrders/>} />
           <Route path='/loader' element={<Loading/>} />
@@ -51,7 +53,7 @@ const App = () => {
             <Route index element={isSeller ? <AddProduct/> : null} />
             <Route path='product-list' element={<ProductList/>} />
             <Route path='orders' element={<Orders/>} />
-            <Route path='support-requests' element={<SupportRequests />} /> {/* Add the new route */}
+            <Route path='support-requests' element={<SupportRequests />} />
           </Route>
         </Routes>
       </div>
