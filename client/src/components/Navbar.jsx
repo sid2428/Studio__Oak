@@ -11,7 +11,11 @@ const Icons = {
   ShoppingCart: () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 1.95 1.61h9.73a2 2 0 0 0 1.95-1.61L23 6H6"></path></svg>),
   Box: () => (<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>),
   LogOut: () => (<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>),
-  Heart: () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>)
+  Heart: ({ isFilled }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill={isFilled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+    </svg>
+  )
 };
 
 const Navbar = () => {
@@ -20,7 +24,9 @@ const Navbar = () => {
   const profileDropdownRef = useRef(null);
   const mobileDrawerRef = useRef(null);
 
-  const { user, setUser, setShowUserLogin, navigate, getCartCount, axios, setIsChatbotOpen } = useAppContext();
+  const { user, setUser, setShowUserLogin, navigate, getCartCount, axios, setIsChatbotOpen, wishlist } = useAppContext();
+  const [isWishlistUpdated, setIsWishlistUpdated] = useState(false);
+  const prevWishlistLength = useRef(wishlist.length);
 
   const logout = async () => {
     try {
@@ -36,6 +42,17 @@ const Navbar = () => {
       toast.error(error.message);
     }
   };
+
+  useEffect(() => {
+    if (wishlist.length > prevWishlistLength.current) {
+      setIsWishlistUpdated(true);
+      const timer = setTimeout(() => {
+        setIsWishlistUpdated(false);
+      }, 1000); // Animation duration is 1s
+      return () => clearTimeout(timer);
+    }
+    prevWishlistLength.current = wishlist.length;
+  }, [wishlist.length]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -80,8 +97,15 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-4 lg:gap-6 flex-1 justify-end">
-            <div onClick={() => navigate('/wishlist')} className="relative cursor-pointer transition-transform duration-300 hover:scale-110">
-              <span className="text-stone-800"><Icons.Heart /></span>
+          <div
+              onClick={() => navigate('/wishlist')}
+              className={`relative cursor-pointer transition-transform duration-300 hover:scale-110 ${
+                isWishlistUpdated ? 'animate-heartbeat' : ''
+              }`}
+            >
+              <span className={wishlist.length > 0 ? 'text-red-500' : 'text-stone-800'}>
+                <Icons.Heart isFilled={wishlist.length > 0} />
+              </span>
             </div>
 
             <div onClick={() => navigate('/cart')} className="relative cursor-pointer transition-transform duration-300 hover:scale-110">
