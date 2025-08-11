@@ -1,3 +1,4 @@
+// vj4614/studio__oak/Studio__Oak-b10b0fc28a4c09b011f4fb2d02016502fb2b8f4b/client/src/App.jsx
 import React from 'react'
 import Navbar from './components/Navbar'
 import { Route, Routes, useLocation } from 'react-router-dom'
@@ -20,6 +21,7 @@ import Orders from './pages/seller/Orders';
 import Loading from './components/Loading';
 import Chatbot from './components/Chatbot';
 import SupportRequests from './pages/seller/SupportRequests'; // Import the new component
+import FAQ from './pages/FAQ';
 
 const App = () => {
 
@@ -44,6 +46,7 @@ const App = () => {
           <Route path='/add-address' element={<AddAddress/>} />
           <Route path='/my-orders' element={<MyOrders/>} />
           <Route path='/loader' element={<Loading/>} />
+          <Route path='/faq' element={<FAQ/>} />
           <Route path='/admin' element={isSeller ? <SellerLayout/> : <SellerLogin/>}>
             <Route index element={isSeller ? <AddProduct/> : null} />
             <Route path='product-list' element={<ProductList/>} />
