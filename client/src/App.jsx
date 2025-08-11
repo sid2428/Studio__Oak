@@ -1,4 +1,3 @@
-// vj4614/studio__oak/Studio__Oak-b10b0fc28a4c09b011f4fb2d02016502fb2b8f4b/client/src/App.jsx
 import React from 'react'
 import Navbar from './components/Navbar'
 import { Route, Routes, useLocation } from 'react-router-dom'
@@ -23,18 +22,19 @@ import Chatbot from './components/Chatbot';
 import SupportRequests from './pages/seller/SupportRequests';
 import Wishlist from './pages/Wishlist'; // Import the new Wishlist page
 import FAQ from './pages/FAQ';
+import OrderSuccessPopup from './components/OrderSuccessPopup';
 
 const App = () => {
 
   const isAdminPath = useLocation().pathname.includes("admin");
-  const {showUserLogin, isSeller} = useAppContext()
+  const {showUserLogin, isSeller, showOrderSuccess} = useAppContext()
 
   return (
     <div className='text-default min-h-screen text-gray-700 bg-background'>
 
      {isAdminPath ? null : <Navbar/>}
      {showUserLogin ? <Login/> : null}
-
+     {showOrderSuccess && <OrderSuccessPopup />}
      <Toaster />
 
       <div className={`${isAdminPath ? "" : "px-6 md:px-16 lg:px-24 xl:px-32"}`}>
