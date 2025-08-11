@@ -1,24 +1,47 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { Link, useParams } from "react-router-dom";
-import { assets } from "../assets/assets";
 import ProductCard from "../components/ProductCard";
 
+// Heart Icon for Wishlist
+const HeartIcon = ({ isFilled, ...props }) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24"
+         fill={isFilled ? 'currentColor' : 'none'}
+         stroke="currentColor"
+         strokeWidth="2"
+         strokeLinecap="round"
+         strokeLinejoin="round"
+         className={isFilled ? 'text-red-500' : 'text-stone-600'}>
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+    </svg>
+);
+
+
 const ProductDetails = () => {
-  const { products, navigate, currency, addToCart, cartItems, removeFromCart } = useAppContext();
+  const { products, navigate, currency, addToCart, cartItems, removeFromCart, wishlist, addToWishlist, removeFromWishlist } = useAppContext();
   const { id } = useParams();
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [thumbnail, setThumbnail] = useState(null);
 
   const product = products.find((item) => item._id === id);
 
-  // Determine if product is out of stock or low in stock
   const isOutOfStock = product?.stock <= 0;
   const isLowStock = product?.stock > 0 && product?.stock <= 5;
+  const isWishlisted = wishlist.includes(product?._id);
+
+  const handleWishlistClick = (e) => {
+    e.stopPropagation(); // Prevents any parent onClick events from firing
+    if (isWishlisted) {
+      removeFromWishlist(product._id);
+    } else {
+      addToWishlist(product._id);
+    }
+  };
+
 
   useEffect(() => {
     if (products.length > 0 && product) {
-      let productsCopy = products.slice();
+      let productsCopy = [...products];
       productsCopy = productsCopy.filter(
         (item) => product.category === item.category && item._id !== product._id
       );
@@ -41,7 +64,7 @@ const ProductDetails = () => {
         </p>
 
         <div className="flex flex-col md:flex-row gap-16 mt-6">
-          {/* Image Section (No Changes Here) */}
+          {/* Image Section */}
           <div className="flex gap-4 flex-1">
             <div className="flex flex-col gap-3">
               {product.image.map((image, index) => (
@@ -54,16 +77,22 @@ const ProductDetails = () => {
                 </div>
               ))}
             </div>
-            <div className="border border-gray-300 rounded-lg overflow-hidden flex-grow">
+            <div className="relative border border-gray-300 rounded-lg overflow-hidden flex-grow">
               <img src={thumbnail} alt="Selected product" className="w-full h-full object-cover" />
+               <button
+                  onClick={handleWishlistClick}
+                  className="absolute top-3 right-3 p-2 bg-white/60 backdrop-blur-sm rounded-full hover:bg-white/90 transition-colors z-10"
+                  aria-label="Toggle Wishlist"
+              >
+                  <HeartIcon isFilled={isWishlisted} />
+              </button>
             </div>
           </div>
 
           {/* Product Details Section */}
           <div className="w-full md:w-1/2 flex flex-col">
             <h1 className="text-4xl font-bold text-gray-800">{product.name}</h1>
-            
-            {/* ADDED: Stock Status and Low Stock Notification */}
+
             {isOutOfStock && (
                 <span className="mt-4 text-xl font-bold text-red-500">Out of Stock</span>
             )}
