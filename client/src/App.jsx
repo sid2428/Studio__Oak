@@ -22,7 +22,6 @@ import Loading from './components/Loading';
 import Chatbot from './components/Chatbot';
 import SupportRequests from './pages/seller/SupportRequests';
 import Wishlist from './pages/Wishlist'; // Import the new Wishlist page
-import SupportRequests from './pages/seller/SupportRequests'; // Import the new component
 import FAQ from './pages/FAQ';
 
 const App = () => {
