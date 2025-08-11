@@ -1,5 +1,3 @@
-// client/src/App.jsx
-
 import React from 'react'
 import Navbar from './components/Navbar'
 import { Route, Routes, useLocation } from 'react-router-dom'
@@ -20,7 +18,8 @@ import AddProduct from './pages/seller/AddProduct';
 import ProductList from './pages/seller/ProductList';
 import Orders from './pages/seller/Orders';
 import Loading from './components/Loading';
-import Chatbot from './components/Chatbot'; // Import the new Chatbot component
+import Chatbot from './components/Chatbot';
+import SupportRequests from './pages/seller/SupportRequests'; // Import the new component
 
 const App = () => {
 
@@ -49,11 +48,12 @@ const App = () => {
             <Route index element={isSeller ? <AddProduct/> : null} />
             <Route path='product-list' element={<ProductList/>} />
             <Route path='orders' element={<Orders/>} />
+            <Route path='support-requests' element={<SupportRequests />} /> {/* Add the new route */}
           </Route>
         </Routes>
       </div>
       {!isAdminPath && <Footer/>}
-      {!isAdminPath && <Chatbot />} {/* Add the Chatbot component here */}
+      {!isAdminPath && <Chatbot />}
     </div>
   )
 }
