@@ -20,7 +20,7 @@ const Navbar = () => {
   const profileDropdownRef = useRef(null);
   const mobileDrawerRef = useRef(null);
 
-  const { user, setUser, setShowUserLogin, navigate, getCartCount, axios } = useAppContext();
+  const { user, setUser, setShowUserLogin, navigate, getCartCount, axios, setIsChatbotOpen } = useAppContext();
 
   const logout = async () => {
     try {
@@ -54,6 +54,12 @@ const Navbar = () => {
     `text-stone-600 hover:text-stone-900 transition-colors text-lg ${isActive ? 'font-bold text-stone-900' : ''}`;
 
   const dropdownItemStyles = 'flex items-center gap-3 p-3 px-4 transition-all duration-200 hover:bg-stone-200 cursor-pointer text-stone-800';
+  
+  const handleContactClick = (e) => {
+    e.preventDefault();
+    setIsChatbotOpen(true);
+    setDrawerOpen(false); // Close mobile drawer if open
+  };
 
   return (
     <>
@@ -63,7 +69,7 @@ const Navbar = () => {
           <div className="hidden lg:flex items-center gap-8 flex-1 justify-start">
             <NavLink to="/" className={linkStyles}>Home</NavLink>
             <NavLink to="/products" className={linkStyles}>Shop</NavLink>
-            <NavLink to="/faq" className={linkStyles}>Contact Us</NavLink>
+            <a href="#" onClick={handleContactClick} className="text-stone-600 hover:text-stone-900 transition-colors text-lg">Contact Us</a>
             <NavLink to="/admin" className={linkStyles}>Become an Admin</NavLink>
           </div>
 
@@ -126,7 +132,7 @@ const Navbar = () => {
         <div className="flex flex-col p-4 space-y-4">
           <NavLink to="/" onClick={() => setDrawerOpen(false)} className="text-xl text-stone-700">Home</NavLink>
           <NavLink to="/products" onClick={() => setDrawerOpen(false)} className="text-xl text-stone-700">Shop</NavLink>
-          <NavLink to="/faq" onClick={() => setDrawerOpen(false)} className="text-xl text-stone-700">Contact Us</NavLink>
+          <a href="#" onClick={handleContactClick} className="text-xl text-stone-700">Contact Us</a>
           <NavLink to="/admin" onClick={() => setDrawerOpen(false)} className="text-xl text-stone-700">Become an Admin</NavLink>
           {user && (<NavLink to="/my-orders" onClick={() => setDrawerOpen(false)} className="text-xl text-stone-700">My Orders</NavLink>)}
           <div className="pt-4 border-t border-stone-200">

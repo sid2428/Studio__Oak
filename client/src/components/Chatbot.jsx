@@ -38,11 +38,10 @@ const OptionButton = ({ text, onClick }) => (
 
 // --- Main Chatbot Component ---
 const Chatbot = () => {
-    const [isOpen, setIsOpen] = useState(false);
+    const { user, axios, isChatbotOpen, setIsChatbotOpen } = useAppContext(); // Use context state
     const [messages, setMessages] = useState([]);
     const [currentNode, setCurrentNode] = useState('start');
     const chatEndRef = useRef(null);
-    const { user, axios } = useAppContext(); // Get user and axios from context
 
     // --- Decision Tree Definition ---
     const decisionTree = {
@@ -92,20 +91,19 @@ const Chatbot = () => {
 
     // --- Chat Logic ---
     useEffect(() => {
-        if (isOpen) {
+        if (isChatbotOpen) {
             resetChat();
         }
-    }, [isOpen]);
+    }, [isChatbotOpen]);
 
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
     const handleOptionClick = async (nextNodeKey) => {
-        console.log("Current user state:", user); // **DEBUG LOG**
         if (!user) {
             toast.error("Please log in to chat with support.");
-            setIsOpen(false);
+            setIsChatbotOpen(false);
             return;
         }
 
@@ -119,7 +117,6 @@ const Chatbot = () => {
 
         if (nextNode.action === 'logSupportRequest') {
             try {
-                console.log("Sending support request to backend..."); // **DEBUG LOG**
                 const { data } = await axios.post('/api/support/request');
                 if (data.success) {
                     toast.success("Your request has been sent to the support team!");
@@ -128,7 +125,6 @@ const Chatbot = () => {
                 }
             } catch (error) {
                 toast.error("Could not submit support request.");
-                console.error("Support request API error:", error); // **DEBUG LOG**
             }
         }
 
@@ -152,14 +148,14 @@ const Chatbot = () => {
     return (
         <>
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => setIsChatbotOpen(!isChatbotOpen)}
                 className="fixed bottom-6 right-6 bg-primary text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-50 transition-transform transform hover:scale-110 animate-pulse-slow"
                 aria-label="Toggle chat"
             >
-                {isOpen ? <CloseIcon /> : <ChatIcon />}
+                {isChatbotOpen ? <CloseIcon /> : <ChatIcon />}
             </button>
 
-            <div className={`fixed bottom-24 right-6 w-80 h-[28rem] bg-white rounded-xl shadow-2xl flex flex-col z-50 transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+            <div className={`fixed bottom-24 right-6 w-80 h-[28rem] bg-white rounded-xl shadow-2xl flex flex-col z-50 transition-all duration-300 ease-in-out ${isChatbotOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
                 <div className="bg-primary p-4 text-white rounded-t-xl flex justify-between items-center">
                     <h3 className="font-bold text-lg">Studio Oak Support</h3>
                     <button onClick={resetChat} className="font-bold text-lg transition-transform transform hover:rotate-180" aria-label="Reset chat">&#x21bb;</button>

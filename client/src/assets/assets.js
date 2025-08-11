@@ -111,8 +111,8 @@ export const footerLinks = [
     title: "Support",
     links: [
       { text: "Contact Us", url: "#" }, // This can be a link to a contact page later
-      { text: "Shipping & Returns", url: "/FAQ" }, // Pointing to FAQ
-      { text: "FAQ", url: "/FAQ" },
+      { text: "Shipping & Returns", url: "/faq" }, // Pointing to FAQ
+      { text: "FAQ", url: "/faq" },
     ],
   },
 ];

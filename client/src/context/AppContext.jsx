@@ -12,14 +12,13 @@ export const AppContextProvider = ({ children }) => {
 
     const currency = import.meta.env.VITE_CURRENCY;
     const navigate = useNavigate();
-    
-    const [user, setUser] = useState(null);
-    const [isSeller, setIsSeller] = useState(false);
-    const [showUserLogin, setShowUserLogin] = useState(false);
-    const [products, setProducts] = useState([]);
-    const [cartItems, setCartItems] = useState({});
-    const [wishlist, setWishlist] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [user, setUser] = useState(null)
+    const [isSeller, setIsSeller] = useState(false)
+    const [showUserLogin, setShowUserLogin] = useState(false)
+    const [products, setProducts] = useState([])
+
+    const [cartItems, setCartItems] = useState({})
+    const [searchQuery, setSearchQuery] = useState('')
 
     // --- AUTH & DATA FETCHING ---
 
@@ -188,13 +187,9 @@ export const AppContextProvider = ({ children }) => {
 
 
     const value = {
-        navigate, user, setUser, isSeller, setIsSeller,
-        showUserLogin, setShowUserLogin, products, currency,
-        cartItems, setCartItems, addToCart, removeFromCart, updateCartItem, getCartCount, getCartAmount,
-        wishlist, addToWishlist, removeFromWishlist,
-        searchQuery, setSearchQuery,
-        axios, fetchProducts, increaseStock
-    };
+        navigate, user, setUser, setIsSeller, isSeller,
+        showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems, increaseStock
+    }
 
     return <AppContext.Provider value={value}>
         {children}
