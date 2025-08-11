@@ -11,6 +11,8 @@ const orderSchema = new mongoose.Schema({
     status: {type: String, default: 'Order Placed'},
     paymentType: {type: String, required: true},
     isPaid: {type: Boolean, required: true, default: false},
+    couponApplied: { type: Boolean, default: false },
+    discountAmount: { type: Number, default: 0 }
 },{ timestamps: true })
 
 const Order = mongoose.models.order || mongoose.model('order', orderSchema)

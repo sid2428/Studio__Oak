@@ -3,19 +3,42 @@ import Product from "../models/Product.js";
 import stripe from "stripe"
 import User from "../models/User.js"
 import { decreaseProductStock } from "./productController.js"; // New import
+import Coupon from "../models/Coupon.js";
 
 // Place Order COD : /api/order/cod
 export const placeOrderCOD = async (req, res)=>{
     try {
-        const { userId, items, address } = req.body;
+        const { userId, items, address, couponCode } = req.body;
         if(!address || items.length === 0){
             return res.json({success: false, message: "Invalid data"})
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
         }
         // Calculate Amount Using Items
         let amount = await items.reduce(async (acc, item)=>{
             const product = await Product.findById(item.product);
             return (await acc) + product.offerPrice * item.quantity;
         }, 0)
+
+        let discountAmount = 0;
+        let couponApplied = false;
+
+        if (couponCode) {
+            const coupon = await Coupon.findOne({ code: couponCode });
+            if (coupon) {
+                if (coupon.oneTimeUse && user.hasUsedFirstOrderCoupon) {
+                    return res.json({ success: false, message: "Coupon already used." });
+                }
+                if (amount >= coupon.minPurchase) {
+                    discountAmount = amount * (coupon.discount / 100);
+                    amount -= discountAmount;
+                    couponApplied = true;
+                }
+            }
+        }
+
 
         // Add Tax Charge (2%)
         amount += Math.floor(amount * 0.02);
@@ -26,7 +49,18 @@ export const placeOrderCOD = async (req, res)=>{
             amount,
             address,
             paymentType: "COD",
+            couponApplied,
+            discountAmount,
         });
+
+        if (couponApplied) {
+            const coupon = await Coupon.findOne({ code: couponCode });
+            if (coupon.oneTimeUse) {
+                user.hasUsedFirstOrderCoupon = true;
+                await user.save();
+            }
+        }
+
 
         // Decrease stock for each item
         for (const item of items) {
@@ -42,11 +76,15 @@ export const placeOrderCOD = async (req, res)=>{
 // Place Order Stripe : /api/order/stripe
 export const placeOrderStripe = async (req, res)=>{
     try {
-        const { userId, items, address } = req.body;
+        const { userId, items, address, couponCode } = req.body;
         const {origin} = req.headers;
 
         if(!address || items.length === 0){
             return res.json({success: false, message: "Invalid data"})
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
         }
 
         let productData = [];
@@ -62,6 +100,23 @@ export const placeOrderStripe = async (req, res)=>{
             return (await acc) + product.offerPrice * item.quantity;
         }, 0)
 
+        let discountAmount = 0;
+        let couponApplied = false;
+
+        if (couponCode) {
+            const coupon = await Coupon.findOne({ code: couponCode });
+            if (coupon) {
+                if (coupon.oneTimeUse && user.hasUsedFirstOrderCoupon) {
+                    return res.json({ success: false, message: "Coupon already used." });
+                }
+                if (amount >= coupon.minPurchase) {
+                    discountAmount = amount * (coupon.discount / 100);
+                    amount -= discountAmount;
+                    couponApplied = true;
+                }
+            }
+        }
+
         // Add Tax Charge (2%)
         amount += Math.floor(amount * 0.02);
 
@@ -71,7 +126,17 @@ export const placeOrderStripe = async (req, res)=>{
             amount,
             address,
             paymentType: "Online",
+            couponApplied,
+            discountAmount,
         });
+
+        if (couponApplied) {
+            const coupon = await Coupon.findOne({ code: couponCode });
+            if (coupon.oneTimeUse) {
+                user.hasUsedFirstOrderCoupon = true;
+                await user.save();
+            }
+        }
 
         // Decrease stock for each item
         for (const item of items) {
@@ -95,6 +160,19 @@ export const placeOrderStripe = async (req, res)=>{
             quantity: item.quantity,
         }
      })
+
+     if (couponApplied) {
+        line_items.push({
+            price_data: {
+                currency: 'usd',
+                product_data: {
+                    name: 'Discount',
+                },
+                unit_amount: -Math.floor(discountAmount * 100),
+            },
+            quantity: 1,
+        });
+    }
 
      // create session
      const session = await stripeInstance.checkout.sessions.create({

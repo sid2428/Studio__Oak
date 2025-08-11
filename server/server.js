@@ -10,14 +10,38 @@ import productRouter from './routes/productRoute.js';
 import cartRouter from './routes/cartRoute.js';
 import addressRouter from './routes/addressRoute.js';
 import orderRouter from './routes/orderRoute.js';
-import supportRouter from './routes/supportRoute.js'; // Import the new support router
+import supportRouter from './routes/supportRoute.js';
 import { stripeWebhooks } from './controllers/orderController.js';
+import couponRouter from './routes/couponRoute.js';
+import Coupon from './models/Coupon.js'; // Import Coupon model
 
 const app = express();
 const port = process.env.PORT || 4000;
 
 await connectDB()
 await connectCloudinary()
+
+// --- Seed Coupons into the database ---
+const seedCoupons = async () => {
+    try {
+        const count = await Coupon.countDocuments();
+        if (count === 0) {
+            console.log("No coupons found. Seeding database...");
+            const couponsToSeed = [
+                { code: 'FIRST15', discount: 15, minPurchase: 0, oneTimeUse: true },
+                { code: 'SAVE5', discount: 5, minPurchase: 499, oneTimeUse: false },
+                { code: 'SAVE7', discount: 7.5, minPurchase: 1099, oneTimeUse: false },
+                { code: 'SAVE10', discount: 10, minPurchase: 2000, oneTimeUse: false }
+            ];
+            await Coupon.insertMany(couponsToSeed);
+            console.log("Coupons seeded successfully.");
+        }
+    } catch (error) {
+        console.error("Error seeding coupons:", error);
+    }
+};
+
+await seedCoupons(); // Run the seeder after DB connection
 
 // Allow multiple origins
 const allowedOrigins = ['http://localhost:5173', '']
@@ -37,7 +61,8 @@ app.use('/api/product', productRouter)
 app.use('/api/cart', cartRouter)
 app.use('/api/address', addressRouter)
 app.use('/api/order', orderRouter)
-app.use('/api/support', supportRouter); // Add the new support router
+app.use('/api/support', supportRouter);
+app.use('/api/coupon', couponRouter);
 
 app.listen(port, ()=>{
     console.log(`Server is running on http://localhost:${port}`)

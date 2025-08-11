@@ -17,7 +17,7 @@ export const AppContextProvider = ({ children }) => {
     const [showUserLogin, setShowUserLogin] = useState(false)
     const [products, setProducts] = useState([])
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-    const [isCartUpdated, setIsCartUpdated] = useState(false);
+    const [coupons, setCoupons] = useState([]);
 
     const [cartItems, setCartItems] = useState({})
     const [searchQuery, setSearchQuery] = useState('')
@@ -59,6 +59,17 @@ export const AppContextProvider = ({ children }) => {
         }
     };
 
+    const fetchCoupons = async () => {
+        try {
+            const { data } = await axios.get('/api/coupon/list');
+            if (data.success) {
+                setCoupons(data.coupons);
+            }
+        } catch (error) {
+            console.error("Failed to fetch coupons:", error);
+        }
+    };
+
     const fetchWishlist = async () => {
         if (!user) return;
         try {
@@ -75,6 +86,7 @@ export const AppContextProvider = ({ children }) => {
         fetchUser();
         fetchSeller();
         fetchProducts();
+        fetchCoupons();
     }, []);
 
     useEffect(() => {
@@ -99,8 +111,6 @@ export const AppContextProvider = ({ children }) => {
 
         setCartItems(prev => ({ ...prev, [itemId]: (prev[itemId] || 0) + 1 }));
         toast.success("Added to Cart");
-        setIsCartUpdated(true);
-        setTimeout(() => setIsCartUpdated(false), 500);
 
         try {
             await axios.post('/api/product/increment-cart-count', { id: itemId });
@@ -194,7 +204,7 @@ export const AppContextProvider = ({ children }) => {
     const value = {
         navigate, user, setUser, setIsSeller, isSeller,
         showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems, increaseStock,
-        wishlist, addToWishlist, removeFromWishlist, isChatbotOpen, setIsChatbotOpen, isCartUpdated
+        wishlist, addToWishlist, removeFromWishlist, isChatbotOpen, setIsChatbotOpen, coupons
     }
 
     return <AppContext.Provider value={value}>
