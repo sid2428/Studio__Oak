@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
 import { useAppContext } from "../context/AppContext";
+import toast from 'react-hot-toast';
 
 const Login = () => {
-    const navigate = useNavigate();
+    const { setShowUserLogin, setUser, navigate, axios } = useAppContext();
     const [isLogin, setIsLogin] = useState(true);
     const [showOtpInput, setShowOtpInput] = useState(false);
     const [otp, setOtp] = useState('');
@@ -15,80 +13,87 @@ const Login = () => {
         password: ''
     });
 
-    const { loginUser } = useAppContext();
-
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
+        const endpoint = isLogin ? '/api/user/login' : '/api/user/register';
         try {
-            if (isLogin) {
-                const response = await axios.post('/api/user/login', formData, {
-                    headers: { 'Content-Type': 'application/json' },
-                    withCredentials: true
-                });
-                if (response.data.success) {
+            const { data } = await axios.post(endpoint, formData);
+
+            if (data.success) {
+                if (isLogin) {
                     toast.success('Login Successful');
-                    loginUser(response.data.user);
+                    setUser(data.user); 
+                    setShowUserLogin(false);
                     navigate('/');
                 } else {
-                    toast.error(response.data.message);
+                    toast.success(data.message);
+                    setShowOtpInput(true);
                 }
             } else {
-                const response = await axios.post('/api/user/register', formData, {
-                    headers: { 'Content-Type': 'application/json' },
-                    withCredentials: true
-                });
-                if (response.data.success) {
-                    toast.success(response.data.message);
+                 if (data.isNotVerified) {
+                    toast.error(data.message);
                     setShowOtpInput(true);
+                    setIsLogin(false);
                 } else {
-                    toast.error(response.data.message);
+                    toast.error(data.message);
                 }
             }
         } catch (error) {
-            console.error(error);
-            toast.error('An error occurred');
+            toast.error(error.response?.data?.message || 'An error occurred');
         }
     };
 
     const handleOtpSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/api/user/verify-otp', { email: formData.email, token: otp }, {
-                headers: { 'Content-Type': 'application/json' },
-                withCredentials: true
-            });
-            if (response.data.success) {
+            const { data } = await axios.post('/api/user/verify-otp', { email: formData.email, token: otp });
+            if (data.success) {
                 toast.success('Email verified successfully! You can now log in.');
                 setShowOtpInput(false);
-                setIsLogin(true); // Switch to login form
+                setIsLogin(true);
+                setOtp('');
             } else {
-                toast.error(response.data.message);
+                toast.error(data.message);
             }
         } catch (error) {
-            console.error(error);
-            toast.error('An error occurred during OTP verification');
+            toast.error(error.response?.data?.message || 'An error occurred during OTP verification');
         }
     };
 
     const handleGoogleSignIn = () => {
-        window.location.href = `${process.env.VITE_BACKEND_URL}/api/user/auth/google`;
+        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/user/auth/google`;
     };
 
+    const resendOtp = async () => {
+        try {
+            const { data } = await axios.post('/api/user/request-otp', { email: formData.email });
+            if (data.success) {
+                toast.success(data.message);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+             toast.error(error.response?.data?.message || 'Failed to resend OTP');
+        }
+    }
+
+    // --- The change is in the className of this div below ---
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-6 text-center">
-                    {isLogin ? 'Login' : 'Register'}
+         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in-up" onClick={() => setShowUserLogin(false)}>
+            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    {showOtpInput ? 'Verify Your Email' : (isLogin ? 'Welcome Back' : 'Create an Account')}
                 </h2>
 
                 {showOtpInput ? (
                     <form onSubmit={handleOtpSubmit}>
+                        <p className="text-center text-gray-600 mb-4">An OTP has been sent to <strong>{formData.email}</strong>. Please enter it below.</p>
                         <div className="mb-4">
-                            <label htmlFor="otp" className="block text-gray-700">OTP</label>
+                            <label htmlFor="otp" className="block text-gray-700 font-medium">OTP</label>
                             <input
                                 type="text"
                                 id="otp"
@@ -96,115 +101,87 @@ const Login = () => {
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value)}
                                 required
-                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-indigo-200"
+                                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition duration-200"
+                            className="w-full bg-primary text-white py-2.5 rounded-md hover:bg-primary-dull transition duration-200 font-semibold"
                         >
                             Verify OTP
                         </button>
+                        <div className="text-center mt-4">
+                           <button type="button" onClick={resendOtp} className="text-sm text-primary hover:underline">Resend OTP</button>
+                        </div>
                     </form>
                 ) : (
-                    <form onSubmit={handleFormSubmit}>
+                    <form onSubmit={handleFormSubmit} className="space-y-4">
                         {!isLogin && (
-                            <div className="mb-4">
-                                <label htmlFor="name" className="block text-gray-700">Name</label>
+                            <div>
+                                <label htmlFor="name" className="block text-gray-700 font-medium">Name</label>
                                 <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-indigo-200"
+                                    type="text" id="name" name="name" value={formData.name} onChange={handleChange} required
+                                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                         )}
-                        <div className="mb-4">
-                            <label htmlFor="email" className="block text-gray-700">Email</label>
+                        <div>
+                            <label htmlFor="email" className="block text-gray-700 font-medium">Email</label>
                             <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-indigo-200"
+                                type="email" id="email" name="email" value={formData.email} onChange={handleChange} required
+                                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                         </div>
-                        <div className="mb-6">
-                            <label htmlFor="password" className="block text-gray-700">Password</label>
+                        <div>
+                            <label htmlFor="password" className="block text-gray-700 font-medium">Password</label>
                             <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-indigo-200"
+                                type="password" id="password" name="password" value={formData.password} onChange={handleChange} required
+                                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-indigo-500 text-white py-2 rounded-md hover:bg-indigo-600 transition duration-200"
+                            className="w-full bg-primary text-white py-2.5 rounded-md hover:bg-primary-dull transition duration-200 font-semibold"
                         >
-                            {isLogin ? 'Login' : 'Register'}
+                            {isLogin ? 'Login' : 'Sign Up'}
                         </button>
                     </form>
                 )}
 
-                <div className="mt-4 text-center">
-                    <p>
-                        {isLogin ? "Don't have an account?" : 'Already have an account?'}
-                        <span
-                            className="text-indigo-500 cursor-pointer ml-1"
-                            onClick={() => {
-                                setIsLogin(!isLogin);
-                                setShowOtpInput(false);
-                            }}
+                {!showOtpInput && (
+                    <>
+                        <div className="mt-4 text-center text-sm">
+                            <p className="text-gray-600">
+                                {isLogin ? "Don't have an account?" : 'Already have an account?'}
+                                <span
+                                    className="text-primary font-semibold cursor-pointer ml-1 hover:underline"
+                                    onClick={() => setIsLogin(!isLogin)}
+                                >
+                                    {isLogin ? 'Sign Up' : 'Login'}
+                                </span>
+                            </p>
+                        </div>
+
+                        <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="bg-white px-2 text-gray-500">OR</span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleGoogleSignIn}
+                            className="w-full bg-white border border-gray-300 text-gray-700 py-2.5 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 transition duration-200 font-semibold"
                         >
-                            {isLogin ? 'Register' : 'Login'}
-                        </span>
-                    </p>
-                </div>
-
-                <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="bg-white px-2 text-gray-500">OR</span>
-                    </div>
-                </div>
-
-                <button
-                    onClick={handleGoogleSignIn}
-                    className="w-full bg-red-500 text-white py-2 rounded-md flex items-center justify-center hover:bg-red-600 transition duration-200"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 48 48"
-                        width="24px"
-                        height="24px"
-                        className="mr-2"
-                    >
-                        <path
-                            fill="#FFC107"
-                            d="M43.611 20.083H42V20H24v8h11.303c-1.614 3.018-4.856 5.372-8.52 5.372-5.187 0-9.404-4.14-9.404-9.25C17.382 17.159 21.579 13 26.69 13c3.084 0 5.86 1.745 7.37 4.303l5.88-5.71C35.253 6.945 30.222 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.34-0.138-2.65-0.389-3.917z"
-                        />
-                        <path
-                            fill="#FF3D00"
-                            d="M6.306 14.691L14.69 20.083l5.88-5.71c-1.51-2.558-4.286-4.303-7.37-4.303C12.955 4 4 12.955 4 24c0 1.34 0.138 2.65 0.389 3.917L4.793 28.5H42V20h-1.389c-0.25-1.267-0.389-2.577-0.389-3.917 0-4.664 2.876-8.681 6.98-10.985L43.611 20.083H42V20H24v8h11.303c-1.614 3.018-4.856 5.372-8.52 5.372-5.187 0-9.404-4.14-9.404-9.25C17.382 17.159 21.579 13 26.69 13c3.084 0 5.86 1.745 7.37 4.303l5.88-5.71C35.253 6.945 30.222 4 24 4z"
-                        />
-                        <path
-                            fill="#000000"
-                            d="M24 4C12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.34-0.138-2.65-0.389-3.917L43.611 20.083H42V20H24v8h11.303c-1.614 3.018-4.856 5.372-8.52 5.372-5.187 0-9.404-4.14-9.404-9.25C17.382 17.159 21.579 13 26.69 13c3.084 0 5.86 1.745 7.37 4.303l5.88-5.71C35.253 6.945 30.222 4 24 4z"
-                        />
-                    </svg>
-                    Sign in with Google
-                </button>
+                            <svg className="w-5 h-5" viewBox="0 0 48 48">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.53-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path>
+                            </svg>
+                            Continue with Google
+                        </button>
+                    </>
+                )}
             </div>
         </div>
     );

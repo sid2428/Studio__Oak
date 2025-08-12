@@ -13,7 +13,7 @@ const sendOTP = async (user) => {
     const token = Speakeasy.totp({
         secret: secret.base32,
         encoding: 'base32',
-        window: 1,
+        window: 10, // OTP is valid for 5 minutes (10 * 30-second windows)
     });
 
     let transporter = nodemailer.createTransport({
@@ -25,10 +25,15 @@ const sendOTP = async (user) => {
     });
 
     let mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"Studio Oak" <${process.env.EMAIL_USER}>`,
         to: user.email,
-        subject: 'Your OTP Code',
-        html: `<p>Your OTP is: <b>${token}</b></p>`
+        subject: 'Your Studio Oak Verification Code',
+        html: `<div style="font-family: sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 400px; margin: auto;">
+                 <h2 style="color: #333;">Email Verification</h2>
+                 <p style="color: #555;">Thank you for registering. Please use the following One-Time Password (OTP) to verify your email address.</p>
+                 <p style="font-size: 28px; font-weight: bold; letter-spacing: 3px; margin: 25px; padding: 12px; background-color: #f1f1f1; border-radius: 5px; color: #815a58;">${token}</p>
+                 <p style="color: #777; font-size: 14px;">This OTP is valid for 5 minutes.</p>
+               </div>`
     };
     
     await transporter.sendMail(mailOptions);
@@ -45,21 +50,24 @@ export const register = async (req, res)=>{
 
         const existingUser = await User.findOne({email})
 
-        if(existingUser)
+        if(existingUser) {
+            if (!existingUser.isVerified) {
+                await sendOTP(existingUser);
+                return res.json({success: true, message: 'Account exists but is not verified. A new OTP has been sent.'});
+            }
             return res.json({success: false, message: 'User already exists'})
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10)
-
-        // Updated user creation with OTP and verification fields
-        const user = await User.create({name, email, password: hashedPassword, hasUsedFirstOrderCoupon: false, isVerified: false})
-
-        // Send OTP immediately after registration
+        const user = await User.create({name, email, password: hashedPassword, isVerified: false})
         await sendOTP(user);
 
-        return res.json({success: true, message: 'Registration successful. Please verify your email with the OTP sent to you.'});
+        return res.json({success: true, message: 'Registration successful. Please check your email for the OTP.'});
     } catch (error) {
-        console.log(error.message);
-        res.json({ success: false, message: error.message });
+        // --- MODIFIED FOR BETTER LOGGING ---
+        console.error("REGISTER_CONTROLLER_ERROR:", error); 
+        res.status(500).json({ success: false, message: "A server error occurred during registration." });
+        // --- END MODIFICATION ---
     }
 }
 
@@ -70,21 +78,21 @@ export const login = async (req, res)=>{
 
         if(!email || !password)
             return res.json({success: false, message: 'Email and password are required'});
+        
         const user = await User.findOne({email});
 
         if(!user){
-            return res.json({success: false, message: 'Invalid email or password'});
+            return res.json({success: false, message: 'User not found. Please sign up first.'});
         }
 
-        // Check if user is verified
         if (!user.isVerified) {
-            return res.json({ success: false, message: 'Please verify your email before logging in.' });
+            await sendOTP(user);
+            return res.json({ success: false, isNotVerified: true, message: 'Your email is not verified. A new OTP has been sent.' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password)
-
         if(!isMatch)
-            return res.json({success: false, message: 'Invalid email or password'});
+            return res.json({success: false, message: 'Invalid password.'});
 
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
 
@@ -97,11 +105,12 @@ export const login = async (req, res)=>{
 
         return res.json({success: true, user: {email: user.email, name: user.name, hasUsedFirstOrderCoupon: user.hasUsedFirstOrderCoupon}})
     } catch (error) {
-        console.log(error.message);
-        res.json({ success: false, message: error.message });
+        // --- MODIFIED FOR BETTER LOGGING ---
+        console.error("LOGIN_CONTROLLER_ERROR:", error); 
+        res.status(500).json({ success: false, message: "An unexpected error occurred during login." });
+        // --- END MODIFICATION ---
     }
 }
-
 
 // New route for requesting OTP
 export const requestOTP = async (req, res) => {
@@ -112,11 +121,14 @@ export const requestOTP = async (req, res) => {
         if (!user) {
             return res.json({ success: false, message: 'User not found' });
         }
-
+        if (user.isVerified) {
+            return res.json({ success: false, message: 'This account is already verified.' });
+        }
         await sendOTP(user);
-        res.json({ success: true, message: 'OTP sent to your email' });
+        res.json({ success: true, message: 'A new OTP has been sent to your email' });
     } catch (error) {
-        res.json({ success: false, message: error.message });
+        console.error("REQUEST_OTP_ERROR:", error);
+        res.status(500).json({ success: false, message: "Failed to send OTP." });
     }
 };
 
@@ -134,19 +146,20 @@ export const verifyOTP = async (req, res) => {
             secret: user.otpSecret,
             encoding: 'base32',
             token: token,
-            window: 1
+            window: 10
         });
 
         if (isTokenValid) {
             user.isVerified = true;
-            user.otpSecret = undefined; // Clear the OTP secret after successful verification
+            user.otpSecret = undefined;
             await user.save();
-            res.json({ success: true, message: 'Email verified successfully!' });
+            res.json({ success: true, message: 'Email verified successfully! You can now log in.' });
         } else {
-            res.json({ success: false, message: 'Invalid OTP' });
+            res.json({ success: false, message: 'Invalid or expired OTP. Please try again.' });
         }
     } catch (error) {
-        res.json({ success: false, message: error.message });
+        console.error("VERIFY_OTP_ERROR:", error);
+        res.status(500).json({ success: false, message: "Failed to verify OTP." });
     }
 };
 
@@ -178,9 +191,7 @@ export const logout = async (req, res)=>{
     }
 }
 
-// --- Wishlist Controllers ---
-
-// Get Wishlist : /api/user/wishlist
+// --- Wishlist Controllers (no changes needed here) ---
 export const getWishlist = async (req, res) => {
     try {
         const user = await User.findById(req.body.userId).populate('wishlist');
@@ -194,7 +205,6 @@ export const getWishlist = async (req, res) => {
     }
 };
 
-// Add to Wishlist : /api/user/wishlist/add
 export const addToWishlist = async (req, res) => {
     try {
         const { userId, productId } = req.body;
@@ -206,7 +216,6 @@ export const addToWishlist = async (req, res) => {
     }
 };
 
-// Remove from Wishlist : /api/user/wishlist/remove
 export const removeFromWishlist = async (req, res) => {
     try {
         const { userId, productId } = req.body;

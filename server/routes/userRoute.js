@@ -1,5 +1,7 @@
 import express from 'express';
+// --- MODIFIED ---
 import { isAuth, login, logout, register, getWishlist, addToWishlist, removeFromWishlist, requestOTP, verifyOTP } from '../controllers/userController.js';
+// --- END MODIFIED ---
 import authUser from '../middlewares/authUser.js';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
@@ -24,7 +26,6 @@ userRouter.get('/auth/google',
 userRouter.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    // Generate and set the JWT token for the user
     if (req.user) {
         const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.cookie('token', token, {
@@ -33,15 +34,17 @@ userRouter.get('/auth/google/callback',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        res.redirect(process.env.CLIENT_URL); // FIXED: Redirect to the client's URL
+        res.redirect(process.env.CLIENT_URL);
     } else {
         res.redirect('/login');
     }
 });
 
+// --- ADDED ---
 // OTP Routes
 userRouter.post('/request-otp', requestOTP);
 userRouter.post('/verify-otp', verifyOTP);
+// --- END ADDED ---
 
 
 export default userRouter;

@@ -51,14 +51,16 @@ const seedCoupons = async () => {
 await seedCoupons(); // Run the seeder after DB connection
 
 // Allow multiple origins
-const allowedOrigins = [process.env.CLIENT_URL, '']
+const allowedOrigins = [process.env.CLIENT_URL, 'http://localhost:5173'];
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 app.post('/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
 
 // Middleware configuration
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({origin: allowedOrigins, credentials: true}));
+
 
 // --- PASSPORT SETUP (Add these lines) ---
 app.use(session({
