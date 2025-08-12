@@ -1,6 +1,7 @@
 import express from 'express';
-import { isAuth, login, logout, register, getWishlist, addToWishlist, removeFromWishlist } from '../controllers/userController.js';
+import { isAuth, login, logout, register, getWishlist, addToWishlist, removeFromWishlist, requestOTP, verifyOTP } from '../controllers/userController.js';
 import authUser from '../middlewares/authUser.js';
+import passport from 'passport';
 
 const userRouter = express.Router();
 
@@ -14,6 +15,20 @@ userRouter.get('/logout', authUser, logout)
 userRouter.get('/wishlist', authUser, getWishlist);
 userRouter.post('/wishlist/add', authUser, addToWishlist);
 userRouter.post('/wishlist/remove', authUser, removeFromWishlist);
+
+// Google OAuth Routes
+userRouter.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+userRouter.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+       res.redirect('/'); // Redirect to the homepage on success
+});
+
+// OTP Routes
+userRouter.post('/request-otp', requestOTP);
+userRouter.post('/verify-otp', verifyOTP);
 
 
 export default userRouter;

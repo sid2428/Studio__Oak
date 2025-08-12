@@ -1,6 +1,38 @@
 import User from "../models/User.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import Speakeasy from 'speakeasy';
+import nodemailer from 'nodemailer';
+
+// New function to send OTP email
+const sendOTP = async (user) => {
+    const secret = Speakeasy.generateSecret({ length: 20 });
+    user.otpSecret = secret.base32;
+    await user.save();
+
+    const token = Speakeasy.totp({
+        secret: secret.base32,
+        encoding: 'base32',
+        window: 1,
+    });
+
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+
+    let mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: 'Your OTP Code',
+        html: `<p>Your OTP is: <b>${token}</b></p>`
+    };
+    
+    await transporter.sendMail(mailOptions);
+};
 
 // Register User : /api/user/register
 export const register = async (req, res)=>{
@@ -18,18 +50,13 @@ export const register = async (req, res)=>{
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const user = await User.create({name, email, password: hashedPassword, hasUsedFirstOrderCoupon: false})
+        // Updated user creation with OTP and verification fields
+        const user = await User.create({name, email, password: hashedPassword, hasUsedFirstOrderCoupon: false, isVerified: false})
 
-        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
+        // Send OTP immediately after registration
+        await sendOTP(user);
 
-        res.cookie('token', token, {
-            httpOnly: true, // Prevent JavaScript to access cookie
-            secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // CSRF protection
-            maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiration time
-        })
-
-        return res.json({success: true, user: {email: user.email, name: user.name, hasUsedFirstOrderCoupon: user.hasUsedFirstOrderCoupon}})
+        return res.json({success: true, message: 'Registration successful. Please verify your email with the OTP sent to you.'});
     } catch (error) {
         console.log(error.message);
         res.json({ success: false, message: error.message });
@@ -37,7 +64,6 @@ export const register = async (req, res)=>{
 }
 
 // Login User : /api/user/login
-
 export const login = async (req, res)=>{
     try {
         const { email, password } = req.body;
@@ -48,6 +74,11 @@ export const login = async (req, res)=>{
 
         if(!user){
             return res.json({success: false, message: 'Invalid email or password'});
+        }
+
+        // Check if user is verified
+        if (!user.isVerified) {
+            return res.json({ success: false, message: 'Please verify your email before logging in.' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password)
@@ -72,6 +103,53 @@ export const login = async (req, res)=>{
 }
 
 
+// New route for requesting OTP
+export const requestOTP = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        await sendOTP(user);
+        res.json({ success: true, message: 'OTP sent to your email' });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// New route for verifying OTP
+export const verifyOTP = async (req, res) => {
+    try {
+        const { email, token } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        const isTokenValid = Speakeasy.totp.verify({
+            secret: user.otpSecret,
+            encoding: 'base32',
+            token: token,
+            window: 1
+        });
+
+        if (isTokenValid) {
+            user.isVerified = true;
+            user.otpSecret = undefined; // Clear the OTP secret after successful verification
+            await user.save();
+            res.json({ success: true, message: 'Email verified successfully!' });
+        } else {
+            res.json({ success: false, message: 'Invalid OTP' });
+        }
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
 // Check Auth : /api/user/is-auth
 export const isAuth = async (req, res)=>{
     try {
@@ -86,7 +164,6 @@ export const isAuth = async (req, res)=>{
 }
 
 // Logout User : /api/user/logout
-
 export const logout = async (req, res)=>{
     try {
         res.clearCookie('token', {

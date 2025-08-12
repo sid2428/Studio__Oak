@@ -3,6 +3,12 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './configs/db.js';
 import 'dotenv/config';
+
+// New Imports for Authentication
+import passport from 'passport';
+import session from 'express-session';
+import configurePassport from './configs/passport.js';
+
 import userRouter from './routes/userRoute.js';
 import sellerRouter from './routes/sellerRoute.js';
 import connectCloudinary from './configs/cloudinary.js';
@@ -54,8 +60,22 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({origin: allowedOrigins, credentials: true}));
 
+// --- PASSPORT SETUP (Add these lines) ---
+app.use(session({
+    secret: 'YOUR_SESSION_SECRET', // Replace with a strong, random string
+    resave: false,
+    saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+// ----------------------------------------
+
 
 app.get('/', (req, res) => res.send("API is Working"));
+
+// Call the passport config function
+configurePassport(passport);
+
 app.use('/api/user', userRouter)
 app.use('/api/seller', sellerRouter)
 app.use('/api/product', productRouter)
