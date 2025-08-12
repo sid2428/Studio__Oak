@@ -111,17 +111,23 @@ export const AppContextProvider = ({ children }) => {
             return;
         }
 
+        const prevCartItems = { ...cartItems };
         setCartItems(prev => ({ ...prev, [itemId]: (prev[itemId] || 0) + 1 }));
         toast.success("Added to Cart");
 
         try {
             await axios.post('/api/product/increment-cart-count', { id: itemId });
+            if (user) {
+                await axios.post('/api/cart/update', { cartItems: { ...cartItems, [itemId]: (cartItems[itemId] || 0) + 1 } });
+            }
         } catch (error) {
-            // Non-critical, so we don't show an error toast
+            toast.error("Failed to update cart. Please try again.");
+            setCartItems(prevCartItems);
         }
     };
 
-    const removeFromCart = (itemId) => {
+    const removeFromCart = async (itemId) => {
+        const prevCartItems = { ...cartItems };
         setCartItems(prev => {
             const newCart = { ...prev };
             if (newCart[itemId] > 1) {
@@ -132,6 +138,21 @@ export const AppContextProvider = ({ children }) => {
             return newCart;
         });
         toast.success("Removed from Cart");
+
+        try {
+            const newCart = { ...cartItems };
+            if (newCart[itemId] > 1) {
+                newCart[itemId] -= 1;
+            } else {
+                delete newCart[itemId];
+            }
+            if (user) {
+                await axios.post('/api/cart/update', { cartItems: newCart });
+            }
+        } catch (error) {
+            toast.error("Failed to update cart. Please try again.");
+            setCartItems(prevCartItems);
+        }
     };
     
     const updateCartItem = (itemId, quantity) => {
@@ -172,22 +193,26 @@ export const AppContextProvider = ({ children }) => {
             setShowUserLogin(true);
             return;
         }
+        const prevWishlist = [...wishlist];
         setWishlist(prev => [...prev, productId]);
         toast.success("Added to your wishlist!");
         try {
             await axios.post('/api/user/wishlist/add', { productId });
         } catch (error) {
             toast.error("Something went wrong");
+            setWishlist(prevWishlist);
         }
     };
 
     const removeFromWishlist = async (productId) => {
+        const prevWishlist = [...wishlist];
         setWishlist(prev => prev.filter(id => id !== productId));
         toast.success("Removed from your wishlist!");
         try {
             await axios.post('/api/user/wishlist/remove', { productId });
         } catch (error) {
             toast.error("Something went wrong");
+            setWishlist(prevWishlist);
         }
     };
 

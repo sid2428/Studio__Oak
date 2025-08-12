@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import toast from 'react-hot-toast';
 
-// Icons for a cleaner UI
+// --- ICONS ---
 const ChevronDownIcon = ({ className }) => (
     <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="6 9 12 15 18 9"></polyline>
@@ -13,6 +13,26 @@ const UserIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
 );
 
+// --- STATUS INDICATOR ---
+const StatusIndicator = ({ status }) => {
+    const statusConfig = {
+        'Order Placed': { icon: '📦', color: 'bg-blue-100 text-blue-800' },
+        'Processing': { icon: '⚙️', color: 'bg-yellow-100 text-yellow-800' },
+        'Shipped': { icon: '🚚', color: 'bg-indigo-100 text-indigo-800' },
+        'Delivered': { icon: '✅', color: 'bg-green-100 text-green-800' },
+        'Cancelled': { icon: '❌', color: 'bg-red-100 text-red-800' },
+    };
+    const { icon, color } = statusConfig[status] || { icon: '📦', color: 'bg-gray-100 text-gray-800' };
+
+    return (
+        <span className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1.5 ${color}`}>
+            <span>{icon}</span>
+            {status}
+        </span>
+    );
+};
+
+
 const Orders = () => {
     const { currency, axios } = useAppContext();
     const [orders, setOrders] = useState([]);
@@ -22,7 +42,7 @@ const Orders = () => {
         try {
             const { data } = await axios.get('/api/order/seller');
             if (data.success) {
-                const validOrders = data.orders.filter(order => 
+                const validOrders = data.orders.filter(order =>
                     order.items.every(item => item.product)
                 );
                 setOrders(validOrders);
@@ -56,8 +76,7 @@ const Orders = () => {
             toast.error("Failed to update order status.");
         }
     };
-    
-    // Function to determine the payment status text and color
+
     const getPaymentStatus = (order) => {
         if (order.isPaid) {
             return { text: 'Paid', className: 'bg-green-100 text-green-800' };
@@ -82,7 +101,6 @@ const Orders = () => {
 
                         return (
                             <div key={order._id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                                {/* Order Summary Header */}
                                 <div className="p-4 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleOrderDetails(order._id)}>
                                     <div className="flex flex-wrap justify-between items-center">
                                         <div className="flex items-center gap-4">
@@ -105,9 +123,12 @@ const Orders = () => {
                                             <ChevronDownIcon className={`w-6 h-6 text-gray-500 transition-transform duration-300 ${expandedOrderId === order._id ? 'transform rotate-180' : ''}`} />
                                         </div>
                                     </div>
+                                    {/* Display Current Status in Header */}
+                                    <div className="mt-2">
+                                       <StatusIndicator status={order.status} />
+                                    </div>
                                 </div>
 
-                                {/* Collapsible Order Details */}
                                 {expandedOrderId === order._id && (
                                     <div className="p-4 border-t border-gray-200 bg-gray-50">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
