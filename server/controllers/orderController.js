@@ -4,21 +4,33 @@ import stripe from "stripe"
 import User from "../models/User.js"
 import { decreaseProductStock } from "./productController.js"; // New import
 import Coupon from "../models/Coupon.js";
+import mongoose from "mongoose";
 
 // Place Order COD : /api/order/cod
 export const placeOrderCOD = async (req, res)=>{
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         const { userId, items, address, couponCode } = req.body;
         if(!address || items.length === 0){
             return res.json({success: false, message: "Invalid data"})
         }
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).session(session);
         if (!user) {
             return res.json({ success: false, message: "User not found" });
         }
+
+        // 1. Check stock for all items within the transaction
+        for (const item of items) {
+            const product = await Product.findById(item.product).session(session);
+            if (!product || product.stock < item.quantity) {
+                throw new Error(`Product "${product.name}" is out of stock.`);
+            }
+        }
+
         // Calculate Amount Using Items
         let amount = await items.reduce(async (acc, item)=>{
-            const product = await Product.findById(item.product);
+            const product = await Product.findById(item.product).session(session);
             return (await acc) + product.offerPrice * item.quantity;
         }, 0)
 
@@ -26,7 +38,7 @@ export const placeOrderCOD = async (req, res)=>{
         let couponApplied = false;
 
         if (couponCode) {
-            const coupon = await Coupon.findOne({ code: couponCode });
+            const coupon = await Coupon.findOne({ code: couponCode }).session(session);
             if (coupon) {
                 if (coupon.oneTimeUse && user.hasUsedFirstOrderCoupon) {
                     return res.json({ success: false, message: "Coupon already used." });
@@ -43,7 +55,13 @@ export const placeOrderCOD = async (req, res)=>{
         // Add Tax Charge (2%)
         amount += Math.floor(amount * 0.02);
 
-        await Order.create({
+        // 2. Decrease stock for each item within the transaction
+        for (const item of items) {
+            await decreaseProductStock(item.product, item.quantity, session);
+        }
+
+        // 3. Create the order
+        await Order.create([{
             userId,
             items,
             amount,
@@ -51,30 +69,32 @@ export const placeOrderCOD = async (req, res)=>{
             paymentType: "COD",
             couponApplied,
             discountAmount,
-        });
+        }], { session });
 
         if (couponApplied) {
-            const coupon = await Coupon.findOne({ code: couponCode });
+            const coupon = await Coupon.findOne({ code: couponCode }).session(session);
             if (coupon.oneTimeUse) {
                 user.hasUsedFirstOrderCoupon = true;
-                await user.save();
+                await user.save({ session });
             }
         }
 
-
-        // Decrease stock for each item
-        for (const item of items) {
-            await decreaseProductStock(item.product, item.quantity);
-        }
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
 
         return res.json({success: true, message: "Order Placed Successfully" })
     } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
         return res.json({ success: false, message: error.message });
     }
 }
 
 // Place Order Stripe : /api/order/stripe
 export const placeOrderStripe = async (req, res)=>{
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         const { userId, items, address, couponCode } = req.body;
         const {origin} = req.headers;
@@ -82,16 +102,24 @@ export const placeOrderStripe = async (req, res)=>{
         if(!address || items.length === 0){
             return res.json({success: false, message: "Invalid data"})
         }
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).session(session);
         if (!user) {
             return res.json({ success: false, message: "User not found" });
+        }
+
+        // 1. Check stock for all items within the transaction
+        for (const item of items) {
+            const product = await Product.findById(item.product).session(session);
+            if (!product || product.stock < item.quantity) {
+                throw new Error(`Product "${product.name}" is out of stock.`);
+            }
         }
 
         let productData = [];
 
         // Calculate Amount Using Items
         let amount = await items.reduce(async (acc, item)=>{
-            const product = await Product.findById(item.product);
+            const product = await Product.findById(item.product).session(session);
             productData.push({
                 name: product.name,
                 price: product.offerPrice,
@@ -104,7 +132,7 @@ export const placeOrderStripe = async (req, res)=>{
         let couponApplied = false;
 
         if (couponCode) {
-            const coupon = await Coupon.findOne({ code: couponCode });
+            const coupon = await Coupon.findOne({ code: couponCode }).session(session);
             if (coupon) {
                 if (coupon.oneTimeUse && user.hasUsedFirstOrderCoupon) {
                     return res.json({ success: false, message: "Coupon already used." });
@@ -120,7 +148,7 @@ export const placeOrderStripe = async (req, res)=>{
         // Add Tax Charge (2%)
         amount += Math.floor(amount * 0.02);
 
-       const order =  await Order.create({
+       const order =  await Order.create([{
             userId,
             items,
             amount,
@@ -128,20 +156,24 @@ export const placeOrderStripe = async (req, res)=>{
             paymentType: "Online",
             couponApplied,
             discountAmount,
-        });
+        }], { session });
 
         if (couponApplied) {
-            const coupon = await Coupon.findOne({ code: couponCode });
+            const coupon = await Coupon.findOne({ code: couponCode }).session(session);
             if (coupon.oneTimeUse) {
                 user.hasUsedFirstOrderCoupon = true;
-                await user.save();
+                await user.save({ session });
             }
         }
 
-        // Decrease stock for each item
+        // 2. Decrease stock for each item within the transaction
         for (const item of items) {
-            await decreaseProductStock(item.product, item.quantity);
+            await decreaseProductStock(item.product, item.quantity, session);
         }
+
+        // Commit the transaction before proceeding to Stripe
+        await session.commitTransaction();
+        session.endSession();
 
     // Stripe Gateway Initialize    
     const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
@@ -175,19 +207,21 @@ export const placeOrderStripe = async (req, res)=>{
     }
 
      // create session
-     const session = await stripeInstance.checkout.sessions.create({
+     const stripeSession = await stripeInstance.checkout.sessions.create({
         line_items,
         mode: "payment",
         success_url: `${origin}/loader?next=my-orders`,
         cancel_url: `${origin}/cart`,
         metadata: {
-            orderId: order._id.toString(),
+            orderId: order[0]._id.toString(),
             userId,
         }
      })
 
-        return res.json({success: true, url: session.url });
+        return res.json({success: true, url: stripeSession.url });
     } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
         return res.json({ success: false, message: error.message });
     }
 }
