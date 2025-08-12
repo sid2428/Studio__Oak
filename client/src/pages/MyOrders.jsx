@@ -1,34 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { assets } from '../assets/assets'; // Assuming assets are needed for styling/icons
+import AddReviewModal from '../components/AddReviewModal'; // Import the modal
+import toast from 'react-hot-toast';
 
 const MyOrders = () => {
     const [myOrders, setMyOrders] = useState([]);
     const { currency, axios, user } = useAppContext();
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [selectedProductId, setSelectedProductId] = useState(null);
 
-    const fetchMyOrders = async () => {
-        try {
-            const { data } = await axios.get('/api/order/user');
-            if (data.success) {
-                // Filter out orders where any item's product is null
-                const validOrders = data.orders.filter(order => 
-                    order.items.every(item => item.product)
-                );
-                setMyOrders(validOrders);
+    const fetchMyOrders = useCallback(async () => {
+        if (user) {
+            try {
+                const { data } = await axios.get('/api/order/user');
+                if (data.success) {
+                    const validOrders = data.orders.filter(order => 
+                        order.items.every(item => item.product)
+                    );
+                    setMyOrders(validOrders);
+                }
+            } catch (error) {
+                console.error("Failed to fetch orders:", error);
+                toast.error("Could not load your orders.");
             }
-        } catch (error) {
-            console.error("Failed to fetch orders:", error);
         }
-    };
+    }, [user, axios]);
 
     useEffect(() => {
-        if (user) {
-            fetchMyOrders();
-        }
-    }, [user]);
+        fetchMyOrders();
+    }, [fetchMyOrders]);
+
+    const handleWriteReview = (productId) => {
+        setSelectedProductId(productId);
+        setShowReviewModal(true);
+    };
+    
+    const onReviewSubmitted = () => {
+        // You can optionally refresh orders or just close the modal
+        // For now, we'll just show a success message as the review is submitted.
+        toast.success("Thank you for your feedback!");
+    }
 
     return (
         <div className='mt-16 pb-16'>
+            {showReviewModal && <AddReviewModal productId={selectedProductId} onClose={() => setShowReviewModal(false)} onReviewSubmitted={onReviewSubmitted} />}
             <div className='flex flex-col items-start w-max mb-8'>
                 <p className='text-3xl font-bold text-gray-800' style={{ fontFamily: "'Playfair Display', serif" }}>My Orders</p>
                 <div className='w-24 h-1 bg-primary rounded-full mt-2'></div>
@@ -67,6 +82,11 @@ const MyOrders = () => {
                                     <p className={`text-sm font-semibold ${order.status === 'Delivered' ? 'text-green-600' : 'text-yellow-600'}`}>
                                         {order.status}
                                     </p>
+                                    {order.status === 'Delivered' && (
+                                        <button onClick={() => handleWriteReview(item.product._id)} className="mt-2 text-sm text-primary hover:underline font-semibold">
+                                            Write a Review
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}

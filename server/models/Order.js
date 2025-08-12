@@ -8,7 +8,7 @@ const orderSchema = new mongoose.Schema({
     }],
     amount: {type: Number, required: true},
     address: {type: String, required: true, ref: 'address'},
-    status: {type: String, default: 'Order Placed'},
+    status: {type: String, default: 'Order Placed', enum: ['Order Placed', 'Processing', 'Shipped', 'Delivered', 'Cancelled']},
     paymentType: {type: String, required: true},
     isPaid: {type: Boolean, required: true, default: false},
     couponApplied: { type: Boolean, default: false },

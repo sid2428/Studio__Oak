@@ -10,6 +10,9 @@ const productSchema = new mongoose.Schema({
     inStock: {type: Boolean, default: true },
     stock: {type: Number, default: 100}, // Changed default from 0 to 100
     timesInCart: {type: Number, default: 0}, // New field
+    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'review' }],
+    numReviews: { type: Number, default: 0 },
+    rating: { type: Number, default: 0 },
 }, { timestamps: true})
 
 const Product = mongoose.models.product || mongoose.model('product', productSchema)

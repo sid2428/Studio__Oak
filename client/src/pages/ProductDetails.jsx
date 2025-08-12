@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAppContext } from "../context/AppContext";
 import { Link, useParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
+import Rating from "../components/Rating";
+import AddReviewModal from "../components/AddReviewModal";
 
 // Heart Icon for Wishlist
 const HeartIcon = ({ isFilled, ...props }) => (
@@ -18,10 +20,13 @@ const HeartIcon = ({ isFilled, ...props }) => (
 
 
 const ProductDetails = () => {
-  const { products, navigate, currency, addToCart, cartItems, removeFromCart, wishlist, addToWishlist, removeFromWishlist } = useAppContext();
+  const { products, fetchProducts, navigate, currency, addToCart, cartItems, removeFromCart, wishlist, addToWishlist, removeFromWishlist, axios, user } = useAppContext();
   const { id } = useParams();
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [thumbnail, setThumbnail] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewEligibility, setReviewEligibility] = useState({ canReview: false, hasReviewed: false, review: null });
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const product = products.find((item) => item._id === id);
 
@@ -29,8 +34,40 @@ const ProductDetails = () => {
   const isLowStock = product?.stock > 0 && product?.stock <= 5;
   const isWishlisted = wishlist.includes(product?._id);
 
+  const fetchReviews = useCallback(async () => {
+    if (product) {
+        try {
+            const { data } = await axios.get(`/api/reviews/${product._id}`);
+            if (data.success) {
+                setReviews(data.reviews);
+                fetchProducts(); 
+            }
+        } catch (error) {
+            console.error("Failed to fetch reviews");
+        }
+    }
+  }, [product, axios, fetchProducts]);
+
+  const checkEligibility = useCallback(async () => {
+    if (user && product) {
+        try {
+            const { data } = await axios.get(`/api/reviews/can-review/${product._id}`);
+            if (data.success) {
+                setReviewEligibility(data);
+            }
+        } catch (error) {
+            // It's okay to fail silently, user just won't see the review button
+        }
+    }
+  }, [user, product, axios]);
+
+  useEffect(() => {
+    fetchReviews();
+    checkEligibility();
+  }, [fetchReviews, checkEligibility]);
+
   const handleWishlistClick = (e) => {
-    e.stopPropagation(); // Prevents any parent onClick events from firing
+    e.stopPropagation();
     if (isWishlisted) {
       removeFromWishlist(product._id);
     } else {
@@ -55,7 +92,18 @@ const ProductDetails = () => {
 
   return (
     product && (
-      <div className="mt-12">
+      <div className="mt-12 pb-16">
+        {showReviewModal && (
+            <AddReviewModal 
+                productId={product._id}
+                existingReview={reviewEligibility.review}
+                onClose={() => setShowReviewModal(false)}
+                onReviewSubmitted={() => {
+                    fetchReviews();
+                    checkEligibility();
+                }}
+            />
+        )}
         <p className="text-sm text-gray-500">
           <Link to={"/"} className="hover:text-primary">Home</Link> /
           <Link to={"/products"} className="hover:text-primary"> Products</Link> /
@@ -92,6 +140,9 @@ const ProductDetails = () => {
           {/* Product Details Section */}
           <div className="w-full md:w-1/2 flex flex-col">
             <h1 className="text-4xl font-bold text-gray-800">{product.name}</h1>
+            <div className="mt-2">
+                <Rating value={product.rating} text={`${product.numReviews} review${product.numReviews !== 1 ? 's' : ''}`} />
+            </div>
 
             {isOutOfStock && (
                 <span className="mt-4 text-xl font-bold text-red-500">Out of Stock</span>
@@ -119,7 +170,6 @@ const ProductDetails = () => {
               </ul>
             </div>
 
-            {/* MODIFIED: Added a disabled state for out-of-stock items */}
             <div className="flex items-center mt-10 gap-4 text-base">
               {!isOutOfStock ? (
                 <>
@@ -172,6 +222,37 @@ const ProductDetails = () => {
             </div>
           </div>
         </div>
+        
+        {/* Reviews Section */}
+        <div className="mt-20">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: "'Playfair Display', serif" }}>Customer Reviews</h2>
+                {reviewEligibility.canReview && (
+                    <button onClick={() => setShowReviewModal(true)} className="px-6 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dull transition">
+                        {reviewEligibility.hasReviewed ? 'Edit Your Review' : 'Write a Review'}
+                    </button>
+                )}
+            </div>
+            {reviews.length === 0 ? (
+                <div className="bg-gray-50 p-6 rounded-lg text-center">
+                    <p className="text-gray-500">There are no reviews for this product yet.</p>
+                </div>
+            ) : (
+                <div className="space-y-6">
+                    {reviews.map((review) => (
+                        <div key={review._id} className="border-b border-gray-200 pb-6">
+                            <div className="flex items-center mb-2">
+                                <p className="font-bold text-gray-800">{review.user.name}</p>
+                                <span className="mx-2 text-gray-300">•</span>
+                                <p className="text-sm text-gray-500">{new Date(review.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            <Rating value={review.rating} />
+                            <p className="text-gray-600 mt-1">{review.comment}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
 
         {/* Related Products Section */}
         <div className="flex flex-col items-center mt-20">
@@ -180,7 +261,6 @@ const ProductDetails = () => {
             <div className="w-20 h-1 bg-primary rounded-full mt-2"></div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 lg:grid-cols-5 mt-8 w-full">
-            {/* MODIFIED: Removed the filter to show related products regardless of stock */}
             {relatedProducts.map((product, index) => (
                 <ProductCard key={index} product={product} />
             ))}
@@ -188,7 +268,7 @@ const ProductDetails = () => {
           <button
             onClick={() => {
               navigate("/products");
-              scrollTo(0, 0);
+              window.scrollTo(0, 0);
             }}
             className="mx-auto cursor-pointer px-12 my-16 py-3 border border-primary rounded-lg text-primary font-semibold hover:bg-primary/10 transition"
           >

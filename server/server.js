@@ -14,6 +14,7 @@ import supportRouter from './routes/supportRoute.js';
 import { stripeWebhooks } from './controllers/orderController.js';
 import couponRouter from './routes/couponRoute.js';
 import Coupon from './models/Coupon.js'; // Import Coupon model
+import reviewRouter from './routes/reviewRoute.js'; // Import review router
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -63,6 +64,7 @@ app.use('/api/address', addressRouter)
 app.use('/api/order', orderRouter)
 app.use('/api/support', supportRouter);
 app.use('/api/coupon', couponRouter);
+app.use('/api/reviews', reviewRouter); // Use review router
 
 app.listen(port, ()=>{
     console.log(`Server is running on http://localhost:${port}`)
