@@ -69,10 +69,16 @@ const AddAddress = () => {
   return (
     <div className='mt-16 pb-16'>
       <p className='text-2xl md:text-3xl text-gray-500'>Add Shipping <span className='font-semibold text-primary'>Address</span></p>
-      <div className='flex flex-col-reverse md:flex-row justify-between mt-10'>
-            <div className='flex-1 max-w-md'>
-             <form onSubmit={onSubmitHandler} className='space-y-3 mt-6 text-sm'>
-
+      <div className='flex flex-col-reverse md:flex-row-reverse md:justify-center md:items-start mt-10'>
+            <div className='w-full md:w-1/2 lg:w-1/3 md:ml-16 mb-16 md:mb-0 max-w-sm'>
+                <img 
+                    className='w-full h-auto rounded-lg shadow-lg' 
+                    src={assets.add_address_image} 
+                    alt="Add Address" 
+                />
+            </div>
+            <div className='w-full md:w-1/2 lg:w-2/3 flex justify-center'>
+             <form onSubmit={onSubmitHandler} className='space-y-3 mt-6 text-sm max-w-md'>
                 <div className='grid grid-cols-2 gap-4'>
                     <InputField handleChange={handleChange} address={address} name='firstName' type="text" placeholder="First Name"/>
                     <InputField handleChange={handleChange} address={address} name='lastName' type="text" placeholder="Last Name"/>
@@ -93,14 +99,11 @@ const AddAddress = () => {
 
                 <InputField handleChange={handleChange} address={address} name='phone' type="text" placeholder="Phone" />
 
-                <button className='w-full mt-6 bg-primary text-white py-3 hover:bg-primary-dull transition cursor-pointer uppercase'>
+                <button className='w-full mt-6 bg-primary text-white py-3 hover:bg-primary-dull transition cursor-pointer uppercase rounded-md'>
                     Save address
                 </button>
-
-
              </form>
             </div>
-            <img className='md:mr-16 mb-16 md:mt-0' src={assets.add_address_iamge} alt="Add Address" />
       </div>
     </div>
   )

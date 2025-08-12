@@ -9,6 +9,8 @@ import office from "./office.png";
 import outdoor from "./outdoor.png";
 import kid_room from "./kid_room.png";
 import decore from "./decore.png";
+// Import the new address image
+import add_address_image from "./address.jpeg";
 
 import design_icon from "./design_icon.svg";
 import craftsmanship_icon from "./craftsmanship_icon.svg";
@@ -51,6 +53,8 @@ export const assets = {
   product_list_icon,
   order_icon,
   main_banner_mobile,
+  // Use the new address image here
+  add_address_image,
 };
 
 export const categories = [
