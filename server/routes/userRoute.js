@@ -2,6 +2,7 @@ import express from 'express';
 import { isAuth, login, logout, register, getWishlist, addToWishlist, removeFromWishlist, requestOTP, verifyOTP } from '../controllers/userController.js';
 import authUser from '../middlewares/authUser.js';
 import passport from 'passport';
+import jwt from 'jsonwebtoken';
 
 const userRouter = express.Router();
 
@@ -23,7 +24,19 @@ userRouter.get('/auth/google',
 userRouter.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-       res.redirect('/'); // Redirect to the homepage on success
+    // Generate and set the JWT token for the user
+    if (req.user) {
+        const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.cookie('token', token, {
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+        res.redirect('/');
+    } else {
+        res.redirect('/login');
+    }
 });
 
 // OTP Routes

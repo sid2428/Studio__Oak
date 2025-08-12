@@ -24,7 +24,7 @@ const Navbar = () => {
   const profileDropdownRef = useRef(null);
   const mobileDrawerRef = useRef(null);
 
-  const { user, setUser, setShowUserLogin, navigate, getCartCount, axios, setIsChatbotOpen, wishlist, isCartUpdated } = useAppContext();
+  const { user, setUser, setShowUserLogin, navigate, getCartCount, axios, setIsChatbotOpen, wishlist, isCartUpdated, fetchUser } = useAppContext();
   const [isWishlistUpdated, setIsWishlistUpdated] = useState(false);
   const prevWishlistLength = useRef(wishlist.length);
 
@@ -42,6 +42,12 @@ const Navbar = () => {
       toast.error(error.message);
     }
   };
+
+  useEffect(() => {
+    if (user === null) {
+      fetchUser();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (wishlist.length > prevWishlistLength.current) {

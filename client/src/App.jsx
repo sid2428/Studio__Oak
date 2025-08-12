@@ -33,7 +33,7 @@ const App = () => {
     <div className='text-default min-h-screen text-gray-700 bg-background'>
 
      {isAdminPath ? null : <Navbar/>}
-     {showUserLogin ? <Login/> : null}
+     {(!isAdminPath && showUserLogin) && <Login/>}
      {showOrderSuccess && <OrderSuccessPopup />}
      <Toaster />
 
