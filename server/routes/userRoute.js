@@ -33,7 +33,7 @@ userRouter.get('/auth/google/callback',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        res.redirect('/');
+        res.redirect(process.env.CLIENT_URL); // FIXED: Redirect to the client's URL
     } else {
         res.redirect('/login');
     }

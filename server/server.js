@@ -51,7 +51,7 @@ const seedCoupons = async () => {
 await seedCoupons(); // Run the seeder after DB connection
 
 // Allow multiple origins
-const allowedOrigins = ['http://localhost:5173', '']
+const allowedOrigins = [process.env.CLIENT_URL, '']
 
 app.post('/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
 

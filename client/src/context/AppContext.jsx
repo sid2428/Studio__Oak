@@ -23,7 +23,7 @@ export const AppContextProvider = ({ children }) => {
 
     const [cartItems, setCartItems] = useState({})
     const [searchQuery, setSearchQuery] = useState('')
-    const [wishlist, setWishlist] = useState([]); // <-- FIX: Add this state
+    const [wishlist, setWishlist] = useState([]);
 
     // --- AUTH & DATA FETCHING ---
 
@@ -206,7 +206,7 @@ export const AppContextProvider = ({ children }) => {
     const value = {
         navigate, user, setUser, setIsSeller, isSeller,
         showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems, increaseStock,
-        wishlist, addToWishlist, removeFromWishlist, isChatbotOpen, setIsChatbotOpen, coupons, showOrderSuccess, setShowOrderSuccess
+        wishlist, addToWishlist, removeFromWishlist, isChatbotOpen, setIsChatbotOpen, coupons, showOrderSuccess, setShowOrderSuccess, fetchUser
     }
 
     return <AppContext.Provider value={value}>
