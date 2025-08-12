@@ -82,11 +82,6 @@ const MyOrders = () => {
                                     <p className={`text-sm font-semibold ${order.status === 'Delivered' ? 'text-green-600' : 'text-yellow-600'}`}>
                                         {order.status}
                                     </p>
-                                    {order.status === 'Delivered' && (
-                                        <button onClick={() => handleWriteReview(item.product._id)} className="mt-2 text-sm text-primary hover:underline font-semibold">
-                                            Write a Review
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                         ))}

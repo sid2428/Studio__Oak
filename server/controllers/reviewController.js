@@ -63,30 +63,44 @@ export const updateReview = async (req, res) => {
         const { rating, comment } = req.body;
         const review = await Review.findById(req.params.id);
 
-        if (review) {
-            // Check if the user owns the review
-            if (review.user.toString() !== req.body.userId) {
-                return res.status(401).json({ success: false, message: 'Not authorized' });
-            }
-
-            review.rating = rating || review.rating;
-            review.comment = comment || review.comment;
-
-            await review.save();
-
-            // Recalculate product rating
-            const product = await Product.findById(review.product);
-            const reviews = await Review.find({ product: review.product });
-            product.rating = reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length;
-            await product.save();
-
-            res.json({ success: true, message: 'Review updated' });
-        } else {
-            res.status(404).json({ success: false, message: 'Review not found' });
+        if (!review) {
+            return res.status(404).json({ success: false, message: 'Review not found' });
         }
+
+        // Check if the user owns the review
+        if (review.user.toString() !== req.body.userId) {
+            return res.status(401).json({ success: false, message: 'Not authorized to edit this review' });
+        }
+
+        // **FIX**: Explicitly update fields if they are provided in the request
+        if (rating !== undefined) {
+            review.rating = rating;
+        }
+        if (comment !== undefined) {
+            review.comment = comment;
+        }
+
+        await review.save();
+
+        // After saving, recalculate the product's average rating
+        const product = await Product.findById(review.product);
+        if (product) {
+            const reviews = await Review.find({ product: review.product });
+            const totalRating = reviews.reduce((acc, item) => item.rating + acc, 0);
+            product.rating = reviews.length > 0 ? totalRating / reviews.length : 0;
+            product.numReviews = reviews.length;
+            await product.save();
+        }
+
+        res.json({ success: true, message: 'Review updated successfully!' });
+
     } catch (error) {
+        // Handle Mongoose validation errors specifically
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ success: false, message: error.message });
+        }
         console.error("Error updating review:", error);
-        res.status(500).json({ success: false, message: 'Server error.' });
+        res.status(500).json({ success: false, message: 'Server error while updating review.' });
     }
 };
 

@@ -96,7 +96,6 @@ const ProductDetails = () => {
         {showReviewModal && (
             <AddReviewModal 
                 productId={product._id}
-                existingReview={reviewEligibility.review}
                 onClose={() => setShowReviewModal(false)}
                 onReviewSubmitted={() => {
                     fetchReviews();
@@ -227,9 +226,9 @@ const ProductDetails = () => {
         <div className="mt-20">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: "'Playfair Display', serif" }}>Customer Reviews</h2>
-                {reviewEligibility.canReview && (
+                {reviewEligibility.canReview && !reviewEligibility.hasReviewed && (
                     <button onClick={() => setShowReviewModal(true)} className="px-6 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dull transition">
-                        {reviewEligibility.hasReviewed ? 'Edit Your Review' : 'Write a Review'}
+                        Write a Review
                     </button>
                 )}
             </div>
