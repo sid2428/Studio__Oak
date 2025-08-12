@@ -129,8 +129,19 @@ const Navbar = () => {
                 </button>
             ) : (
               <div className="relative" ref={profileDropdownRef}>
-                <button onClick={() => setProfileDropdownOpen(p => !p)} className="focus:outline-none transition-transform duration-300 hover:scale-110 p-1">
-                  <span className="text-stone-800"><Icons.User /></span>
+                <button onClick={() => setProfileDropdownOpen(p => !p)} className="focus:outline-none transition-transform duration-300 hover:scale-110">
+                  {/* START: MODIFICATION FOR PROFILE PICTURE */}
+                  {user.profilePicture ? (
+                      <img 
+                          src={user.profilePicture} 
+                          alt="Profile" 
+                          className="w-8 h-8 rounded-full object-cover border-2 border-stone-200"
+                          referrerPolicy="no-referrer"
+                      />
+                  ) : (
+                      <span className="text-stone-800 p-1"><Icons.User /></span>
+                  )}
+                  {/* END: MODIFICATION FOR PROFILE PICTURE */}
                 </button>
                 {profileDropdownOpen && (
                   <div className="absolute top-10 right-0 mt-2 w-48 bg-stone-50 border border-stone-200 rounded-lg shadow-xl z-40 transition-all duration-300 origin-top-right animate-fade-in-up">

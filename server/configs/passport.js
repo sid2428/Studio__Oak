@@ -13,12 +13,18 @@ export default function(passport) {
         try {
             let user = await User.findOne({ email: profile.emails[0].value });
             if (!user) {
+                // When a new user signs up with Google
                 user = await User.create({
                     googleID: profile.id,
                     name: profile.displayName,
                     email: profile.emails[0].value,
+                    profilePicture: profile.photos[0].value, // Save profile picture
                     isVerified: true
                 });
+            } else if (!user.profilePicture && profile.photos && profile.photos.length > 0) {
+                // Update profile picture for existing users logging in with Google
+                user.profilePicture = profile.photos[0].value;
+                await user.save();
             }
             return done(null, user);
         } catch (e) {
