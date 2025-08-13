@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAppContext } from '../context/AppContext'; // Import AppContext
-import toast from 'react-hot-toast'; // Import toast for notifications
+import { useAppContext } from '../context/AppContext';
+import toast from 'react-hot-toast';
 
-// --- SVG Icons for a more polished look ---
+// --- SVG Icons ---
 const ChatIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -16,11 +16,10 @@ const CloseIcon = () => (
     </svg>
 );
 
-
 // --- Helper Components ---
 const ChatBubble = ({ message, isUser }) => (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-2`}>
-        <div className={`rounded-lg px-4 py-2 max-w-xs ${isUser ? 'bg-primary text-white' : 'bg-gray-200 text-gray-800'}`}>
+        <div className={`rounded-lg px-4 py-2 max-w-xs break-words ${isUser ? 'bg-primary text-white' : 'bg-gray-200 text-gray-800'}`}>
             {message}
         </div>
     </div>
@@ -29,24 +28,25 @@ const ChatBubble = ({ message, isUser }) => (
 const OptionButton = ({ text, onClick }) => (
     <button
         onClick={onClick}
-        className="w-full text-left bg-white border border-primary text-primary hover:bg-primary/10 transition px-4 py-2 rounded-lg mb-2 text-sm"
+        className="w-full text-left bg-white border border-primary text-primary hover:bg-primary/10 transition px-4 py-2 rounded-lg text-sm"
     >
         {text}
     </button>
 );
 
-
 // --- Main Chatbot Component ---
 const Chatbot = () => {
-    const { user, axios, isChatbotOpen, setIsChatbotOpen } = useAppContext(); // Use context state
+    const { user, axios, isChatbotOpen, setIsChatbotOpen } = useAppContext();
     const [messages, setMessages] = useState([]);
     const [currentNode, setCurrentNode] = useState('start');
+    const [isLoading, setIsLoading] = useState(false);
+    const [inputValue, setInputValue] = useState('');
     const chatEndRef = useRef(null);
 
     // --- Decision Tree Definition ---
     const decisionTree = {
         'start': {
-            question: 'Hi there! 👋 How can I help you today?',
+            question: 'Hi there! 👋 How can I help you today? You can choose an option below or ask me a question directly.',
             options: {
                 'My Order': 'order_issues',
                 'Shipping & Returns': 'shipping_returns_info',
@@ -56,11 +56,7 @@ const Chatbot = () => {
         },
         'order_issues': {
             question: 'Sure, I can help with that. What is your order-related question?',
-            options: {
-                'Where is my order?': 'track_order_info',
-                'How to cancel my order?': 'cancel_order_info',
-                'Go back': 'start',
-            }
+            options: { 'Where is my order?': 'track_order_info', 'How to cancel my order?': 'cancel_order_info', 'Go back': 'start' }
         },
         'track_order_info': {
             answer: "Once your order has shipped, you will receive an email with a tracking number and a link to the carrier's website. You can use this to track your delivery.",
@@ -81,7 +77,7 @@ const Chatbot = () => {
         'contact_agent': {
             answer: "No problem! I've notified our support team. An agent will get in touch with you via email shortly. Please have your order number ready if you have one.",
             options: { 'Thanks!': 'end' },
-            action: 'logSupportRequest' // Add an action to log the request
+            action: 'logSupportRequest'
         },
         'end': {
             answer: "You're welcome! Have a great day.",
@@ -91,14 +87,44 @@ const Chatbot = () => {
 
     // --- Chat Logic ---
     useEffect(() => {
-        if (isChatbotOpen) {
-            resetChat();
-        }
+        if (isChatbotOpen) resetChat();
     }, [isChatbotOpen]);
 
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    const handleFreeformSubmit = async (e) => {
+        e.preventDefault();
+        if (!inputValue.trim()) return;
+        if (!user) {
+            toast.error("Please log in to chat with support.");
+            return;
+        }
+
+        const userMessage = { text: inputValue, isUser: true };
+        setMessages(prev => [...prev, userMessage]);
+        setInputValue('');
+        setIsLoading(true);
+
+        try {
+            const { data } = await axios.post('/api/gemini/chat', { prompt: inputValue });
+            let aiMessage;
+            if (data.success) {
+                aiMessage = { text: data.response, isUser: false, options: { 'Ask something else': 'start' } };
+            } else {
+                aiMessage = { text: data.message || "I couldn't process that.", isUser: false, options: { 'Try again': 'start' } };
+                toast.error(data.message);
+            }
+            setMessages(prev => [...prev, aiMessage]);
+        } catch (error) {
+            const errorMessage = { text: "Sorry, I'm having trouble connecting. Please try again later.", isUser: false, options: { 'Go back to start': 'start' } };
+            setMessages(prev => [...prev, errorMessage]);
+            toast.error("Could not get a response from the AI assistant.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleOptionClick = async (nextNodeKey) => {
         if (!user) {
@@ -118,11 +144,8 @@ const Chatbot = () => {
         if (nextNode.action === 'logSupportRequest') {
             try {
                 const { data } = await axios.post('/api/support/request');
-                if (data.success) {
-                    toast.success("Your request has been sent to the support team!");
-                } else {
-                    toast.error(data.message);
-                }
+                if (data.success) toast.success("Your request has been sent to the support team!");
+                else toast.error(data.message);
             } catch (error) {
                 toast.error("Could not submit support request.");
             }
@@ -143,7 +166,7 @@ const Chatbot = () => {
         setCurrentNode('start');
         const startingNode = decisionTree['start'];
         setMessages([{ text: startingNode.question, isUser: false, options: startingNode.options }]);
-    }
+    };
 
     return (
         <>
@@ -161,19 +184,51 @@ const Chatbot = () => {
                     <button onClick={resetChat} className="font-bold text-lg transition-transform transform hover:rotate-180" aria-label="Reset chat">&#x21bb;</button>
                 </div>
 
-                <div className="flex-1 p-4 overflow-y-auto">
+                <div className="flex-1 p-4 overflow-y-auto no-scrollbar">
                     {messages.map((msg, index) => (
                         <div key={index}>
                             <ChatBubble message={msg.text} isUser={msg.isUser} />
                         </div>
                     ))}
+                    {isLoading && <ChatBubble message="..." isUser={false} />}
                     <div ref={chatEndRef} />
                 </div>
 
                 <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-                    {messages.length > 0 && messages[messages.length - 1]?.options && Object.entries(messages[messages.length - 1].options).map(([text, nextNodeKey]) => (
-                        <OptionButton key={nextNodeKey} text={text} onClick={() => handleOptionClick(nextNodeKey)} />
-                    ))}
+                    {messages.length > 0 && messages[messages.length - 1]?.options && Object.keys(messages[messages.length - 1].options).length > 0 ? (
+                        <>
+                            <div className="space-y-2">
+                                {Object.entries(messages[messages.length - 1].options).map(([text, nextNodeKey]) => (
+                                    <OptionButton key={nextNodeKey} text={text} onClick={() => handleOptionClick(nextNodeKey)} />
+                                ))}
+                            </div>
+                            {currentNode === 'start' && (
+                                <>
+                                    <div className="relative my-3">
+                                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-300"></div></div>
+                                        <div className="relative flex justify-center text-sm"><span className="bg-gray-50 px-2 text-gray-500">OR</span></div>
+                                    </div>
+                                    <form onSubmit={handleFreeformSubmit}>
+                                        <input
+                                            type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)}
+                                            placeholder="Ask a question..."
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                            disabled={isLoading}
+                                        />
+                                    </form>
+                                </>
+                            )}
+                        </>
+                    ) : (
+                        <form onSubmit={handleFreeformSubmit}>
+                            <input
+                                type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)}
+                                placeholder="Ask another question..."
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                disabled={isLoading}
+                            />
+                        </form>
+                    )}
                 </div>
             </div>
         </>
