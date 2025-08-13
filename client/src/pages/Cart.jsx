@@ -71,40 +71,39 @@ const Cart = () => {
         toast.success("Coupon removed.");
     };
 
-    const placeOrder = async ()=>{
+    const placeOrder = async () => {
         try {
-            if(!selectedAddress){
+            if (!selectedAddress) {
                 return toast.error("Please select an address")
             }
-
+    
             // Place Order with COD
-            if(paymentOption === "COD"){
-                const {data} = await axios.post('/api/order/cod', {
+            if (paymentOption === "COD") {
+                const { data } = await axios.post('/api/order/cod', {
                     userId: user._id,
-                    items: cartArray.map(item=> ({product: item._id, quantity: item.quantity})),
+                    items: cartArray.map(item => ({ product: item._id, quantity: item.quantity })),
                     address: selectedAddress._id,
                     couponCode: appliedCoupon ? appliedCoupon.code : ""
                 })
-
-                if(data.success){
-                    toast.success(data.message)
+    
+                if (data.success) {
                     setCartItems({})
                     setShowOrderSuccess(true);
-                }else{
+                } else {
                     toast.error(data.message)
                 }
-            }else{
+            } else {
                 // Place Order with Stripe
-                const {data} = await axios.post('/api/order/stripe', {
+                const { data } = await axios.post('/api/order/stripe', {
                     userId: user._id,
-                    items: cartArray.map(item=> ({product: item._id, quantity: item.quantity})),
+                    items: cartArray.map(item => ({ product: item._id, quantity: item.quantity })),
                     address: selectedAddress._id,
                     couponCode: appliedCoupon ? appliedCoupon.code : ""
                 })
-
-                if(data.success){
+    
+                if (data.success) {
                     window.location.replace(data.url)
-                }else{
+                } else {
                     toast.error(data.message)
                 }
             }
