@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from "../context/AppContext";
 import toast from 'react-hot-toast';
 
 const Login = () => {
-    const { setShowUserLogin, setUser, navigate, axios } = useAppContext();
+    const { setShowUserLogin, setUser, navigate, axios, initialLoginMode } = useAppContext();
     const [isLogin, setIsLogin] = useState(true);
     const [showOtpInput, setShowOtpInput] = useState(false);
     const [otp, setOtp] = useState('');
@@ -12,6 +12,11 @@ const Login = () => {
         email: '',
         password: ''
     });
+
+    useEffect(() => {
+        setIsLogin(initialLoginMode === 'login');
+    }, [initialLoginMode]);
+
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,7 +31,7 @@ const Login = () => {
             if (data.success) {
                 if (isLogin) {
                     toast.success('Login Successful');
-                    setUser(data.user); 
+                    setUser(data.user);
                     setShowUserLogin(false);
                     navigate('/');
                 } else {

@@ -24,7 +24,7 @@ const Navbar = () => {
   const profileDropdownRef = useRef(null);
   const mobileDrawerRef = useRef(null);
 
-  const { user, setUser, setShowUserLogin, navigate, getCartCount, axios, setIsChatbotOpen, wishlist, isCartUpdated, fetchUser } = useAppContext();
+  const { user, setUser, setShowUserLogin, setInitialLoginMode, navigate, getCartCount, axios, setIsChatbotOpen, wishlist, isCartUpdated, fetchUser } = useAppContext();
   const [isWishlistUpdated, setIsWishlistUpdated] = useState(false);
   const prevWishlistLength = useRef(wishlist.length);
 
@@ -77,7 +77,7 @@ const Navbar = () => {
     `text-stone-600 hover:text-stone-900 transition-colors text-lg ${isActive ? 'font-bold text-stone-900' : ''}`;
 
   const dropdownItemStyles = 'flex items-center gap-3 p-3 px-4 transition-all duration-200 hover:bg-stone-200 cursor-pointer text-stone-800';
-  
+
   const handleContactClick = (e) => {
     e.preventDefault();
     setIsChatbotOpen(true);
@@ -88,7 +88,7 @@ const Navbar = () => {
     <>
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-lg border-b border-stone-200">
         <nav className="relative w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
-          
+
           <div className="hidden lg:flex items-center gap-8 flex-1 justify-start">
             <NavLink to="/" className={linkStyles}>Home</NavLink>
             <NavLink to="/products" className={linkStyles}>Shop</NavLink>
@@ -116,7 +116,7 @@ const Navbar = () => {
 
             <div onClick={() => navigate('/cart')} className={`relative cursor-pointer transition-transform duration-300 hover:scale-110 ${isCartUpdated ? 'animate-jiggle' : ''}`}>
               <span className="text-stone-800"><Icons.ShoppingCart /></span>
-              {getCartCount() > 0 && 
+              {getCartCount() > 0 &&
                 <span className={`absolute -top-1 -right-2 text-xs text-white bg-stone-800 font-bold w-4 h-4 flex items-center justify-center rounded-full ${isCartUpdated ? 'animate-fade-in-up' : ''}`}>
                     {getCartCount()}
                 </span>
@@ -124,24 +124,33 @@ const Navbar = () => {
             </div>
 
             {!user ? (
-                <button onClick={() => setShowUserLogin(true)} className="focus:outline-none transition-transform duration-300 hover:scale-110 p-1">
-                    <span className="text-stone-800"><Icons.User /></span>
-                </button>
+                <div className="hidden md:flex items-center gap-2">
+                    <button
+                        onClick={() => { setInitialLoginMode('login'); setShowUserLogin(true); }}
+                        className="px-4 py-2 text-stone-700 font-semibold rounded-md hover:bg-stone-200 transition-colors"
+                    >
+                        Log In
+                    </button>
+                    <button
+                        onClick={() => { setInitialLoginMode('signup'); setShowUserLogin(true); }}
+                        className="px-4 py-2 bg-stone-800 text-white font-semibold rounded-md hover:bg-stone-700 transition-colors"
+                    >
+                        Sign Up
+                    </button>
+                </div>
             ) : (
               <div className="relative" ref={profileDropdownRef}>
                 <button onClick={() => setProfileDropdownOpen(p => !p)} className="focus:outline-none transition-transform duration-300 hover:scale-110">
-                  {/* START: MODIFICATION FOR PROFILE PICTURE */}
                   {user.profilePicture ? (
-                      <img 
-                          src={user.profilePicture} 
-                          alt="Profile" 
+                      <img
+                          src={user.profilePicture}
+                          alt="Profile"
                           className="w-8 h-8 rounded-full object-cover border-2 border-stone-200"
                           referrerPolicy="no-referrer"
                       />
                   ) : (
                       <span className="text-stone-800 p-1"><Icons.User /></span>
                   )}
-                  {/* END: MODIFICATION FOR PROFILE PICTURE */}
                 </button>
                 {profileDropdownOpen && (
                   <div className="absolute top-10 right-0 mt-2 w-48 bg-stone-50 border border-stone-200 rounded-lg shadow-xl z-40 transition-all duration-300 origin-top-right animate-fade-in-up">
@@ -157,7 +166,7 @@ const Navbar = () => {
                 )}
               </div>
             )}
-            
+
             <button onClick={() => setDrawerOpen(true)} aria-label="Menu" className="p-1 text-stone-800 lg:hidden">
                 <Icons.Menu />
             </button>
@@ -178,7 +187,10 @@ const Navbar = () => {
           {user && (<NavLink to="/my-orders" onClick={() => setDrawerOpen(false)} className="text-xl text-stone-700">My Orders</NavLink>)}
           <div className="pt-4 border-t border-stone-200">
             {!user ? (
-              <button onClick={() => { setDrawerOpen(false); setShowUserLogin(true); }} className="w-full px-6 py-2 bg-stone-800 hover:bg-stone-700 transition text-white rounded-full font-medium shadow-lg">Login</button>
+              <div className="space-y-3">
+                <button onClick={() => { setDrawerOpen(false); setInitialLoginMode('login'); setShowUserLogin(true); }} className="w-full px-6 py-2 bg-stone-200 hover:bg-stone-300 transition text-stone-800 rounded-full font-medium">Login</button>
+                <button onClick={() => { setDrawerOpen(false); setInitialLoginMode('signup'); setShowUserLogin(true); }} className="w-full px-6 py-2 bg-stone-800 hover:bg-stone-700 transition text-white rounded-full font-medium shadow-lg">Sign Up</button>
+              </div>
             ) : (
               <button onClick={() => { logout(); setDrawerOpen(false); }} className="w-full px-6 py-2 bg-stone-800 hover:bg-stone-700 transition text-white rounded-full font-medium shadow-lg">Logout</button>
             )}

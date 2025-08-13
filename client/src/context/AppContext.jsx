@@ -15,6 +15,7 @@ export const AppContextProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [isSeller, setIsSeller] = useState(false)
     const [showUserLogin, setShowUserLogin] = useState(false)
+    const [initialLoginMode, setInitialLoginMode] = useState('login'); // New state
     const [products, setProducts] = useState([])
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
     const [coupons, setCoupons] = useState([]);
@@ -83,7 +84,7 @@ export const AppContextProvider = ({ children }) => {
             // Silently fail as it's not critical for app function
         }
     };
-    
+
     useEffect(() => {
         fetchUser();
         fetchSeller();
@@ -154,7 +155,7 @@ export const AppContextProvider = ({ children }) => {
             setCartItems(prevCartItems);
         }
     };
-    
+
     const updateCartItem = (itemId, quantity) => {
         const product = products.find((p) => p._id === itemId);
         const oldQuantity = cartItems[itemId] || 0;
@@ -230,7 +231,7 @@ export const AppContextProvider = ({ children }) => {
 
     const value = {
         navigate, user, setUser, setIsSeller, isSeller,
-        showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems, increaseStock,
+        showUserLogin, setShowUserLogin, initialLoginMode, setInitialLoginMode, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems, increaseStock,
         wishlist, addToWishlist, removeFromWishlist, isChatbotOpen, setIsChatbotOpen, coupons, showOrderSuccess, setShowOrderSuccess, fetchUser
     }
 
