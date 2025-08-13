@@ -19,8 +19,9 @@ import orderRouter from './routes/orderRoute.js';
 import supportRouter from './routes/supportRoute.js';
 import { stripeWebhooks } from './controllers/orderController.js';
 import couponRouter from './routes/couponRoute.js';
-import Coupon from './models/Coupon.js'; // Import Coupon model
-import reviewRouter from './routes/reviewRoute.js'; // Import review router
+import Coupon from './models/Coupon.js';
+import reviewRouter from './routes/reviewRoute.js';
+import geminiRouter from './routes/geminiRoute.js'; // <-- IMPORT GEMINI ROUTER
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -48,7 +49,7 @@ const seedCoupons = async () => {
     }
 };
 
-await seedCoupons(); // Run the seeder after DB connection
+await seedCoupons();
 
 // Allow multiple origins
 const allowedOrigins = [process.env.CLIENT_URL, 'http://localhost:5173'];
@@ -62,22 +63,21 @@ app.use(express.json());
 app.use(cookieParser());
 
 
-// --- PASSPORT SETUP (Add these lines) ---
+// --- PASSPORT SETUP ---
 app.use(session({
-    secret: 'YOUR_SESSION_SECRET', // Replace with a strong, random string
+    secret: process.env.SESSION_SECRET || 'a_super_secret_key', // Use an env variable
     resave: false,
     saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-// ----------------------------------------
-
 
 app.get('/', (req, res) => res.send("API is Working"));
 
 // Call the passport config function
 configurePassport(passport);
 
+// --- API ROUTES ---
 app.use('/api/user', userRouter)
 app.use('/api/seller', sellerRouter)
 app.use('/api/product', productRouter)
@@ -86,7 +86,8 @@ app.use('/api/address', addressRouter)
 app.use('/api/order', orderRouter)
 app.use('/api/support', supportRouter);
 app.use('/api/coupon', couponRouter);
-app.use('/api/reviews', reviewRouter); // Use review router
+app.use('/api/reviews', reviewRouter);
+app.use('/api/gemini', geminiRouter); // <-- USE THE NEW GEMINI ROUTER
 
 app.listen(port, ()=>{
     console.log(`Server is running on http://localhost:${port}`)

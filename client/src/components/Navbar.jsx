@@ -54,7 +54,7 @@ const Navbar = () => {
       setIsWishlistUpdated(true);
       const timer = setTimeout(() => {
         setIsWishlistUpdated(false);
-      }, 1000); // Animation duration is 1s
+      }, 1000);
       return () => clearTimeout(timer);
     }
     prevWishlistLength.current = wishlist.length;
@@ -81,37 +81,36 @@ const Navbar = () => {
   const handleContactClick = (e) => {
     e.preventDefault();
     setIsChatbotOpen(true);
-    setDrawerOpen(false); // Close mobile drawer if open
+    setDrawerOpen(false);
   };
 
   return (
     <>
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-lg border-b border-stone-200">
-        <nav className="relative w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
-
-          <div className="hidden lg:flex items-center gap-8 flex-1 justify-start">
+        <nav className="w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
+          
+          {/* --- Navigation Links (Left) --- */}
+          <div className="hidden lg:flex items-center gap-8">
             <NavLink to="/" className={linkStyles}>Home</NavLink>
             <NavLink to="/products" className={linkStyles}>Shop</NavLink>
             <a href="#" onClick={handleContactClick} className="text-stone-600 hover:text-stone-900 transition-colors text-lg">Contact Us</a>
             <NavLink to="/admin" className={linkStyles}>Become an Admin</NavLink>
           </div>
 
-          <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex-shrink-0">
+          {/* --- Centered Logo (Middle) --- */}
+          <div className="absolute left-1/2 transform -translate-x-1/2">
             <NavLink to="/" style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-4xl text-stone-800 tracking-wide">
               Studio Oak
             </NavLink>
           </div>
 
-          <div className="flex items-center gap-4 lg:gap-6 flex-1 justify-end">
-          <div
+          {/* --- Icons and Auth (Right) --- */}
+          <div className="flex items-center gap-4 lg:gap-6 ml-auto"> {/* Use ml-auto here */}
+            <div
               onClick={() => navigate('/wishlist')}
-              className={`relative cursor-pointer transition-transform duration-300 hover:scale-110 ${
-                isWishlistUpdated ? 'animate-heartbeat' : ''
-              }`}
+              className={`relative cursor-pointer transition-transform duration-300 hover:scale-110 ${isWishlistUpdated ? 'animate-heartbeat' : ''}`}
             >
-              <span className={wishlist.length > 0 ? 'text-red-500' : 'text-stone-800'}>
-                <Icons.Heart isFilled={wishlist.length > 0} />
-              </span>
+              <span className={wishlist.length > 0 ? 'text-red-500' : 'text-stone-800'}><Icons.Heart isFilled={wishlist.length > 0} /></span>
             </div>
 
             <div onClick={() => navigate('/cart')} className={`relative cursor-pointer transition-transform duration-300 hover:scale-110 ${isCartUpdated ? 'animate-jiggle' : ''}`}>
@@ -122,50 +121,53 @@ const Navbar = () => {
                 </span>
               }
             </div>
-
-            {!user ? (
-                <div className="hidden md:flex items-center gap-2">
-                    <button
-                        onClick={() => { setInitialLoginMode('login'); setShowUserLogin(true); }}
-                        className="px-4 py-2 text-stone-700 font-semibold rounded-md hover:bg-stone-200 transition-colors"
-                    >
-                        Log In
-                    </button>
-                    <button
-                        onClick={() => { setInitialLoginMode('signup'); setShowUserLogin(true); }}
-                        className="px-4 py-2 bg-stone-800 text-white font-semibold rounded-md hover:bg-stone-700 transition-colors"
-                    >
-                        Sign Up
-                    </button>
-                </div>
-            ) : (
-              <div className="relative" ref={profileDropdownRef}>
-                <button onClick={() => setProfileDropdownOpen(p => !p)} className="focus:outline-none transition-transform duration-300 hover:scale-110">
-                  {user.profilePicture ? (
-                      <img
-                          src={user.profilePicture}
-                          alt="Profile"
-                          className="w-8 h-8 rounded-full object-cover border-2 border-stone-200"
-                          referrerPolicy="no-referrer"
-                      />
-                  ) : (
-                      <span className="text-stone-800 p-1"><Icons.User /></span>
-                  )}
-                </button>
-                {profileDropdownOpen && (
-                  <div className="absolute top-10 right-0 mt-2 w-48 bg-stone-50 border border-stone-200 rounded-lg shadow-xl z-40 transition-all duration-300 origin-top-right animate-fade-in-up">
-                    <ul className="py-1">
-                      <li onClick={() => { navigate('/my-orders'); setProfileDropdownOpen(false); }} className={dropdownItemStyles}>
-                        <Icons.Box /> My Orders
-                      </li>
-                      <li onClick={() => { logout(); setProfileDropdownOpen(false); }} className={dropdownItemStyles}>
-                        <Icons.LogOut /> Logout
-                      </li>
-                    </ul>
+            
+            {/* --- Auth buttons or Profile Icon --- */}
+            <div className="h-10 hidden md:flex items-center">
+              {!user ? (
+                  <div className="flex items-center gap-2">
+                      <button
+                          onClick={() => { setInitialLoginMode('login'); setShowUserLogin(true); }}
+                          className="px-4 py-2 text-stone-700 font-semibold rounded-md hover:bg-stone-200 transition-colors"
+                      >
+                          Log In
+                      </button>
+                      <button
+                          onClick={() => { setInitialLoginMode('signup'); setShowUserLogin(true); }}
+                          className="px-4 py-2 bg-stone-800 text-white font-semibold rounded-md hover:bg-stone-700 transition-colors"
+                      >
+                          Sign Up
+                      </button>
                   </div>
-                )}
-              </div>
-            )}
+              ) : (
+                <div className="relative" ref={profileDropdownRef}>
+                  <button onClick={() => setProfileDropdownOpen(p => !p)} className="flex items-center justify-center h-10 w-10 focus:outline-none transition-transform duration-300 hover:scale-110">
+                    {user.profilePicture ? (
+                        <img
+                            src={user.profilePicture}
+                            alt="Profile"
+                            className="w-8 h-8 rounded-full object-cover border-2 border-stone-200"
+                            referrerPolicy="no-referrer"
+                        />
+                    ) : (
+                        <span className="text-stone-800"><Icons.User /></span>
+                    )}
+                  </button>
+                  {profileDropdownOpen && (
+                    <div className="absolute top-10 right-0 mt-2 w-48 bg-stone-50 border border-stone-200 rounded-lg shadow-xl z-40 transition-all duration-300 origin-top-right animate-fade-in-up">
+                      <ul className="py-1">
+                        <li onClick={() => { navigate('/my-orders'); setProfileDropdownOpen(false); }} className={dropdownItemStyles}>
+                          <Icons.Box /> My Orders
+                        </li>
+                        <li onClick={() => { logout(); setProfileDropdownOpen(false); }} className={dropdownItemStyles}>
+                          <Icons.LogOut /> Logout
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <button onClick={() => setDrawerOpen(true)} aria-label="Menu" className="p-1 text-stone-800 lg:hidden">
                 <Icons.Menu />
@@ -173,7 +175,8 @@ const Navbar = () => {
           </div>
         </nav>
       </header>
-
+      
+      {/* Mobile Drawer */}
       <div ref={mobileDrawerRef} className={`fixed top-0 right-0 h-full w-64 bg-stone-50 shadow-xl transition-transform duration-300 ease-in-out z-40 lg:hidden ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex items-center justify-between p-4 border-b border-stone-200">
           <h2 className="text-xl font-semibold text-stone-800" style={{ fontFamily: "'Playfair Display', serif" }}>Menu</h2>

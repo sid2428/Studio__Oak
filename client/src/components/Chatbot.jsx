@@ -41,41 +41,56 @@ const Chatbot = () => {
     const [currentNode, setCurrentNode] = useState('start');
     const [isLoading, setIsLoading] = useState(false);
     const [inputValue, setInputValue] = useState('');
+    const [consecutiveFailures, setConsecutiveFailures] = useState(0);
     const chatEndRef = useRef(null);
+    const chatbotRef = useRef(null);
+    const chatButtonRef = useRef(null);
 
-    // --- Decision Tree Definition ---
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                isChatbotOpen &&
+                chatbotRef.current && !chatbotRef.current.contains(event.target) &&
+                chatButtonRef.current && !chatButtonRef.current.contains(event.target)
+            ) {
+                setIsChatbotOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isChatbotOpen, setIsChatbotOpen]);
+
     const decisionTree = {
         'start': {
             question: 'Hi there! 👋 How can I help you today? You can choose an option below or ask me a question directly.',
-            options: {
-                'My Order': 'order_issues',
-                'Shipping & Returns': 'shipping_returns_info',
-                'Product Information': 'product_info',
-                'Talk to an Agent': 'contact_agent',
-            },
+            options: { 'My Order': 'order_issues', 'Shipping & Returns': 'shipping_returns_info', 'Product Information': 'product_info', 'Talk to an Agent': 'contact_agent' },
         },
         'order_issues': {
             question: 'Sure, I can help with that. What is your order-related question?',
             options: { 'Where is my order?': 'track_order_info', 'How to cancel my order?': 'cancel_order_info', 'Go back': 'start' }
         },
         'track_order_info': {
-            answer: "Once your order has shipped, you will receive an email with a tracking number and a link to the carrier's website. You can use this to track your delivery.",
+            answer: "Once your order has shipped, you will receive an email with a tracking number and a link to the carrier's website.",
             options: { 'I have another question': 'start' }
         },
         'cancel_order_info': {
-            answer: "You can cancel your order within 24 hours of placing it. Please go to 'My Orders' and select the cancel option. If it's been more than 24 hours, please contact our support team.",
+            answer: "You can cancel your order within 24 hours of placing it. Go to 'My Orders' and select the cancel option. After 24 hours, please contact support.",
             options: { 'I have another question': 'start' }
         },
         'shipping_returns_info': {
-            answer: "We offer free standard shipping on all orders over $50. We also have a 30-day return policy. If you're not satisfied, you can return it within 30 days for a full refund.",
+            answer: "We offer free standard shipping on all orders over $50 and have a 30-day return policy.",
             options: { 'I have another question': 'start' }
         },
         'product_info': {
-            answer: "You can find detailed information, including materials and dimensions, on each product's page. If you have a specific question, feel free to ask an agent!",
+            answer: "You can find detailed information on each product's page. If you have a specific question, feel free to ask an agent!",
             options: { 'Talk to an Agent': 'contact_agent', 'Go back': 'start' }
         },
         'contact_agent': {
-            answer: "No problem! I've notified our support team. An agent will get in touch with you via email shortly. Please have your order number ready if you have one.",
+            answer: "No problem! I've notified our support team. An agent will get in touch with you via email shortly.",
             options: { 'Thanks!': 'end' },
             action: 'logSupportRequest'
         },
@@ -85,7 +100,6 @@ const Chatbot = () => {
         }
     };
 
-    // --- Chat Logic ---
     useEffect(() => {
         if (isChatbotOpen) resetChat();
     }, [isChatbotOpen]);
@@ -102,22 +116,41 @@ const Chatbot = () => {
             return;
         }
 
+        if (consecutiveFailures >= 2) {
+            const userMessage = { text: inputValue, isUser: true };
+            const escalationMessage = {
+                text: "It seems I'm still having trouble. Would you like me to connect you with a support agent?",
+                isUser: false,
+                options: { 'Yes, talk to an agent': 'contact_agent' }
+            };
+            setMessages(prev => [...prev, userMessage, escalationMessage]);
+            setInputValue('');
+            setConsecutiveFailures(0);
+            setCurrentNode('start'); 
+            return; 
+        }
+
         const userMessage = { text: inputValue, isUser: true };
-        setMessages(prev => [...prev, userMessage]);
+        const newMessages = [...messages, userMessage];
+        setMessages(newMessages);
         setInputValue('');
         setIsLoading(true);
 
         try {
-            const { data } = await axios.post('/api/gemini/chat', { prompt: inputValue });
+            const { data } = await axios.post('/api/gemini/chat', { prompt: inputValue, history: newMessages });
             let aiMessage;
             if (data.success) {
+                setConsecutiveFailures(0);
                 aiMessage = { text: data.response, isUser: false, options: { 'Ask something else': 'start' } };
             } else {
+                setConsecutiveFailures(prev => prev + 1);
                 aiMessage = { text: data.message || "I couldn't process that.", isUser: false, options: { 'Try again': 'start' } };
                 toast.error(data.message);
             }
             setMessages(prev => [...prev, aiMessage]);
+
         } catch (error) {
+            setConsecutiveFailures(prev => prev + 1);
             const errorMessage = { text: "Sorry, I'm having trouble connecting. Please try again later.", isUser: false, options: { 'Go back to start': 'start' } };
             setMessages(prev => [...prev, errorMessage]);
             toast.error("Could not get a response from the AI assistant.");
@@ -127,6 +160,7 @@ const Chatbot = () => {
     };
 
     const handleOptionClick = async (nextNodeKey) => {
+        setConsecutiveFailures(0);
         if (!user) {
             toast.error("Please log in to chat with support.");
             setIsChatbotOpen(false);
@@ -164,6 +198,7 @@ const Chatbot = () => {
 
     const resetChat = () => {
         setCurrentNode('start');
+        setConsecutiveFailures(0);
         const startingNode = decisionTree['start'];
         setMessages([{ text: startingNode.question, isUser: false, options: startingNode.options }]);
     };
@@ -171,36 +206,34 @@ const Chatbot = () => {
     return (
         <>
             <button
+                ref={chatButtonRef}
                 onClick={() => setIsChatbotOpen(!isChatbotOpen)}
-                className="fixed bottom-6 right-6 bg-primary text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-50 transition-transform transform hover:scale-110 animate-pulse-slow"
+                // --- THIS IS THE FIX ---
+                className="fixed bottom-6 right-6 bg-primary text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform transform hover:scale-110 animate-pulse-slow"
                 aria-label="Toggle chat"
             >
                 {isChatbotOpen ? <CloseIcon /> : <ChatIcon />}
             </button>
-
-            <div className={`fixed bottom-24 right-6 w-80 h-[28rem] bg-white rounded-xl shadow-2xl flex flex-col z-50 transition-all duration-300 ease-in-out ${isChatbotOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+            
+            <div
+                ref={chatbotRef}
+                // --- THIS IS THE FIX ---
+                className={`fixed bottom-24 right-6 w-96 h-[32rem] bg-white rounded-xl shadow-2xl flex flex-col z-40 transition-all duration-300 ease-in-out ${isChatbotOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+            >
                 <div className="bg-primary p-4 text-white rounded-t-xl flex justify-between items-center">
                     <h3 className="font-bold text-lg">Studio Oak Support</h3>
                     <button onClick={resetChat} className="font-bold text-lg transition-transform transform hover:rotate-180" aria-label="Reset chat">&#x21bb;</button>
                 </div>
-
                 <div className="flex-1 p-4 overflow-y-auto no-scrollbar">
-                    {messages.map((msg, index) => (
-                        <div key={index}>
-                            <ChatBubble message={msg.text} isUser={msg.isUser} />
-                        </div>
-                    ))}
+                    {messages.map((msg, index) => (<div key={index}><ChatBubble message={msg.text} isUser={msg.isUser} /></div>))}
                     {isLoading && <ChatBubble message="..." isUser={false} />}
                     <div ref={chatEndRef} />
                 </div>
-
                 <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                     {messages.length > 0 && messages[messages.length - 1]?.options && Object.keys(messages[messages.length - 1].options).length > 0 ? (
                         <>
                             <div className="space-y-2">
-                                {Object.entries(messages[messages.length - 1].options).map(([text, nextNodeKey]) => (
-                                    <OptionButton key={nextNodeKey} text={text} onClick={() => handleOptionClick(nextNodeKey)} />
-                                ))}
+                                {Object.entries(messages[messages.length - 1].options).map(([text, nextNodeKey]) => (<OptionButton key={nextNodeKey} text={text} onClick={() => handleOptionClick(nextNodeKey)} />))}
                             </div>
                             {currentNode === 'start' && (
                                 <>
@@ -209,24 +242,14 @@ const Chatbot = () => {
                                         <div className="relative flex justify-center text-sm"><span className="bg-gray-50 px-2 text-gray-500">OR</span></div>
                                     </div>
                                     <form onSubmit={handleFreeformSubmit}>
-                                        <input
-                                            type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)}
-                                            placeholder="Ask a question..."
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                            disabled={isLoading}
-                                        />
+                                        <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="Ask a question..." className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" disabled={isLoading} />
                                     </form>
                                 </>
                             )}
                         </>
                     ) : (
                         <form onSubmit={handleFreeformSubmit}>
-                            <input
-                                type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Ask another question..."
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                disabled={isLoading}
-                            />
+                            <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="Ask another question..." className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" disabled={isLoading} />
                         </form>
                     )}
                 </div>
