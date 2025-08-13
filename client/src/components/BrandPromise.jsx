@@ -1,22 +1,25 @@
 import React from 'react';
 import { assets, features } from '../assets/assets';
+import toast from 'react-hot-toast'; // Import the toast library
 
 const BrandPromise = () => {
+
+  // Function to handle form submission
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault(); // Prevent the form from reloading the page
+    // You can add logic here to actually subscribe the user to a service
+    toast.success("Thanks for subscribing to our newsletter!"); // Show a success message
+    e.target.reset(); // Clear the input field
+  };
+
   return (
     <section 
       className="brand-promise-moodboard mt-24"
       style={{ backgroundImage: `url(${assets.moodboard_bg})` }}
     >
-      {/* A single container to center our showcase card */}
       <div className="showcase-container">
-        
-        {/* The unified showcase card with a refined glass effect */}
         <div className="showcase-card">
-          
-          {/* Internal grid for clear hierarchy */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-
-            {/* Left Side (2/3 width): Our Core Principles */}
             <div className="lg:col-span-2">
               <h2 className="text-3xl font-bold text-stone-800 font-serif mb-6">Our Core Principles</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
@@ -34,13 +37,13 @@ const BrandPromise = () => {
               </div>
             </div>
 
-            {/* Right Side (1/3 width): Newsletter CTA with a visual separator */}
             <div className="lg:border-l lg:border-stone-900/10 lg:pl-8">
               <h3 className="text-2xl font-bold text-stone-800 font-serif">Stay Inspired</h3>
               <p className="text-stone-600 mt-1 mb-5 text-sm">
                 Join our newsletter for new arrivals and members-only offers.
               </p>
-              <form>
+              {/* --- MODIFICATION START --- */}
+              <form onSubmit={handleNewsletterSubmit}> 
                 <input
                   type="email"
                   placeholder="Your email address"
@@ -51,11 +54,11 @@ const BrandPromise = () => {
                   type="submit" 
                   className="w-full px-6 py-3 bg-amber-700 hover:bg-amber-800 text-white font-semibold rounded-md transition-colors duration-300"
                 >
-                  Sign Up
+                  Join Us
                 </button>
               </form>
+              {/* --- MODIFICATION END --- */}
             </div>
-
           </div>
         </div>
       </div>
