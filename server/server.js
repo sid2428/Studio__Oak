@@ -20,7 +20,9 @@ import { stripeWebhooks } from './controllers/orderController.js';
 import couponRouter from './routes/couponRoute.js';
 import Coupon from './models/Coupon.js';
 import reviewRouter from './routes/reviewRoute.js';
-import geminiRouter from './routes/geminiRoute.js'; 
+import geminiRouter from './routes/geminiRoute.js';
+import supportRouter from './routes/supportRoute.js'; // <-- ADD THIS
+
 
 const app = express();
 const port = process.env.PORT || 4000;
