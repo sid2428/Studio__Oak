@@ -1,0 +1,13 @@
+# render.yaml
+services:
+  - type: web
+    name: studio-oak-backend
+    # ... your backend settings
+  - type: static
+    name: studio-oak-frontend
+    buildCommand: npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /
+        destination: /index.html
