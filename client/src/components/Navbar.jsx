@@ -24,7 +24,7 @@ const Navbar = () => {
   const profileDropdownRef = useRef(null);
   const mobileDrawerRef = useRef(null);
 
-  const { user, setUser, setShowUserLogin, setInitialLoginMode, navigate, getCartCount, axios, setIsChatbotOpen, wishlist, isCartUpdated, fetchUser } = useAppContext();
+  const { user, setUser, setShowUserLogin, setInitialLoginMode, navigate, getCartCount, axios, setIsChatbotOpen, wishlist, fetchUser } = useAppContext();
   const [isWishlistUpdated, setIsWishlistUpdated] = useState(false);
   const prevWishlistLength = useRef(wishlist.length);
 
@@ -89,7 +89,19 @@ const Navbar = () => {
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-lg border-b border-stone-200">
         <nav className="w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           
-          {/* --- Navigation Links (Left) --- */}
+          {/* Mobile Menu Button (Left) */}
+          <button onClick={() => setDrawerOpen(p => !p)} aria-label="Menu" className="p-1 text-stone-800 lg:hidden">
+              <Icons.Menu />
+          </button>
+
+          {/* Centered Logo */}
+          <div className="flex-1 flex justify-center lg:justify-start">
+            <NavLink to="/" style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-4xl text-stone-800 tracking-wide">
+              Studio Oak
+            </NavLink>
+          </div>
+
+          {/* Desktop Navigation Links */}
           <div className="hidden lg:flex items-center gap-8">
             <NavLink to="/" className={linkStyles}>Home</NavLink>
             <NavLink to="/products" className={linkStyles}>Shop</NavLink>
@@ -97,15 +109,8 @@ const Navbar = () => {
             <NavLink to="/admin" className={linkStyles}>Become an Admin</NavLink>
           </div>
 
-          {/* --- Centered Logo (Middle) --- */}
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <NavLink to="/" style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-4xl text-stone-800 tracking-wide">
-              Studio Oak
-            </NavLink>
-          </div>
-
-          {/* --- Icons and Auth (Right) --- */}
-          <div className="flex items-center gap-4 lg:gap-6 ml-auto"> {/* Use ml-auto here */}
+          {/* Icons and Auth (Right) */}
+          <div className="flex items-center gap-4 lg:gap-6 flex-1 justify-end">
             <div
               onClick={() => navigate('/wishlist')}
               className={`relative cursor-pointer transition-transform duration-300 hover:scale-110 ${isWishlistUpdated ? 'animate-heartbeat' : ''}`}
@@ -113,16 +118,16 @@ const Navbar = () => {
               <span className={wishlist.length > 0 ? 'text-red-500' : 'text-stone-800'}><Icons.Heart isFilled={wishlist.length > 0} /></span>
             </div>
 
-            <div onClick={() => navigate('/cart')} className={`relative cursor-pointer transition-transform duration-300 hover:scale-110 ${isCartUpdated ? 'animate-jiggle' : ''}`}>
+            <div onClick={() => navigate('/cart')} className={`relative cursor-pointer transition-transform duration-300 hover:scale-110 `}>
               <span className="text-stone-800"><Icons.ShoppingCart /></span>
               {getCartCount() > 0 &&
-                <span className={`absolute -top-1 -right-2 text-xs text-white bg-stone-800 font-bold w-4 h-4 flex items-center justify-center rounded-full ${isCartUpdated ? 'animate-fade-in-up' : ''}`}>
+                <span className={`absolute -top-1 -right-2 text-xs text-white bg-stone-800 font-bold w-4 h-4 flex items-center justify-center rounded-full `}>
                     {getCartCount()}
                 </span>
               }
             </div>
             
-            {/* --- Auth buttons or Profile Icon --- */}
+            {/* Auth buttons or Profile Icon */}
             <div className="h-10 hidden md:flex items-center">
               {!user ? (
                   <div className="flex items-center gap-2">
@@ -168,16 +173,12 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-
-            <button onClick={() => setDrawerOpen(true)} aria-label="Menu" className="p-1 text-stone-800 lg:hidden">
-                <Icons.Menu />
-            </button>
           </div>
         </nav>
       </header>
       
       {/* Mobile Drawer */}
-      <div ref={mobileDrawerRef} className={`fixed top-0 right-0 h-full w-64 bg-stone-50 shadow-xl transition-transform duration-300 ease-in-out z-40 lg:hidden ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div ref={mobileDrawerRef} className={`fixed top-0 left-0 h-full w-64 bg-stone-50 shadow-xl transition-transform duration-300 ease-in-out z-40 lg:hidden ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between p-4 border-b border-stone-200">
           <h2 className="text-xl font-semibold text-stone-800" style={{ fontFamily: "'Playfair Display', serif" }}>Menu</h2>
           <button onClick={() => setDrawerOpen(false)} aria-label="Close menu" className="p-1 text-stone-800"><Icons.X /></button>
