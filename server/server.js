@@ -16,79 +16,76 @@ import productRouter from './routes/productRoute.js';
 import cartRouter from './routes/cartRoute.js';
 import addressRouter from './routes/addressRoute.js';
 import orderRouter from './routes/orderRoute.js';
-import supportRouter from './routes/supportRoute.js';
 import { stripeWebhooks } from './controllers/orderController.js';
 import couponRouter from './routes/couponRoute.js';
 import Coupon from './models/Coupon.js';
 import reviewRouter from './routes/reviewRoute.js';
-import geminiRouter from './routes/geminiRoute.js'; // <-- IMPORT GEMINI ROUTER
+import geminiRouter from './routes/geminiRoute.js'; 
 
 const app = express();
 const port = process.env.PORT || 4000;
 
-await connectDB()
-await connectCloudinary()
-
-// --- Seed Coupons into the database ---
-const seedCoupons = async () => {
-    try {
-        const count = await Coupon.countDocuments();
-        if (count === 0) {
-            console.log("No coupons found. Seeding database...");
-            const couponsToSeed = [
-                { code: 'FIRST15', discount: 15, minPurchase: 0, oneTimeUse: true },
-                { code: 'SAVE5', discount: 5, minPurchase: 499, oneTimeUse: false },
-                { code: 'SAVE7', discount: 7.5, minPurchase: 1099, oneTimeUse: false },
-                { code: 'SAVE10', discount: 10, minPurchase: 2000, oneTimeUse: false }
-            ];
-            await Coupon.insertMany(couponsToSeed);
-            console.log("Coupons seeded successfully.");
-        }
-    } catch (error) {
-        console.error("Error seeding coupons:", error);
-    }
-};
-
-await seedCoupons();
-
-// Allow multiple origins
+// CORS setup
 const allowedOrigins = [process.env.CLIENT_URL, 'http://localhost:5173'];
-
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 
-app.post('/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
+// Stripe webhook BEFORE express.json()
+app.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
 
-// Middleware configuration
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-
-// --- PASSPORT SETUP ---
+// Passport & session
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'a_super_secret_key', // Use an env variable
+    secret: process.env.SESSION_SECRET || 'a_super_secret_key',
     resave: false,
     saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Routes
 app.get('/', (req, res) => res.send("API is Working"));
-
-// Call the passport config function
 configurePassport(passport);
 
-// --- API ROUTES ---
-app.use('/api/user', userRouter)
-app.use('/api/seller', sellerRouter)
-app.use('/api/product', productRouter)
-app.use('/api/cart', cartRouter)
-app.use('/api/address', addressRouter)
-app.use('/api/order', orderRouter)
+app.use('/api/user', userRouter);
+app.use('/api/seller', sellerRouter);
+app.use('/api/product', productRouter);
+app.use('/api/cart', cartRouter);
+app.use('/api/address', addressRouter);
+app.use('/api/order', orderRouter);
 app.use('/api/support', supportRouter);
 app.use('/api/coupon', couponRouter);
 app.use('/api/reviews', reviewRouter);
-app.use('/api/gemini', geminiRouter); // <-- USE THE NEW GEMINI ROUTER
+app.use('/api/gemini', geminiRouter);
 
-app.listen(port, ()=>{
-    console.log(`Server is running on http://localhost:${port}`)
-})
+// Start server AFTER DB & Cloudinary connect
+const startServer = async () => {
+    try {
+        await connectDB();
+        await connectCloudinary();
+
+        // Seed coupons
+        const count = await Coupon.countDocuments();
+        if (count === 0) {
+            console.log("Seeding coupons...");
+            await Coupon.insertMany([
+                { code: 'FIRST15', discount: 15, minPurchase: 0, oneTimeUse: true },
+                { code: 'SAVE5', discount: 5, minPurchase: 499, oneTimeUse: false },
+                { code: 'SAVE7', discount: 7.5, minPurchase: 1099, oneTimeUse: false },
+                { code: 'SAVE10', discount: 10, minPurchase: 2000, oneTimeUse: false }
+            ]);
+        }
+
+        app.listen(port, () => {
+            console.log(`✅ Server is running on port ${port}`);
+        });
+
+    } catch (err) {
+        console.error("❌ Failed to start server:", err);
+        process.exit(1);
+    }
+};
+
+startServer();
