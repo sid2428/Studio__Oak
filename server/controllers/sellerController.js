@@ -9,12 +9,12 @@ export const sellerLogin = async (req, res) =>{
         if(password === process.env.SELLER_PASSWORD && email === process.env.SELLER_EMAIL){
             const token = jwt.sign({email}, process.env.JWT_SECRET, {expiresIn: '7d'});
 
-            res.cookie('sellerToken', token, {
-                httpOnly: true, 
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-            });
+      res.cookie('sellerToken', token, {
+    httpOnly: true, 
+    secure: true, // This must be explicitly set to true
+    sameSite: 'None', // This must be explicitly set to 'None'
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+});
 
             return res.json({ success: true, message: "Logged In" });
         }else{
