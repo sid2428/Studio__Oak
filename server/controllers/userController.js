@@ -84,6 +84,12 @@ export const login = async (req, res)=>{
         if(!user){
             return res.json({success: false, message: 'User not found. Please sign up first.'});
         }
+        
+        // --- ADDED: Check if the user has a password before attempting to compare ---
+        if (!user.password) {
+            return res.json({ success: false, message: 'This account was created with Google. Please sign in with Google.' });
+        }
+        // --- END ADDED ---
 
         if (!user.isVerified) {
             await sendOTP(user);
@@ -111,6 +117,7 @@ export const login = async (req, res)=>{
         // --- END MODIFICATION ---
     }
 }
+
 
 // New route for requesting OTP
 export const requestOTP = async (req, res) => {
