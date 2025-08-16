@@ -14,4 +14,4 @@ productRouter.post('/update-stock', authSeller, updateStock);
 productRouter.post('/increase-stock', authSeller, increaseStock);
 productRouter.post('/increment-cart-count', incrementCartCount); // New route
 
-export default productRouter;
+export {productRouter};
