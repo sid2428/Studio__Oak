@@ -14,4 +14,4 @@ supportRouter.get('/requests', authSeller, getSupportRequests);
 // **NEW** Route for an admin to update a support request's status
 supportRouter.post('/request/update', authSeller, updateSupportRequestStatus);
 
-export default supportRouter;
+export {supportRouter};
