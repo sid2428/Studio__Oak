@@ -10,4 +10,4 @@ reviewRouter.put('/:id', authUser, updateReview);
 reviewRouter.get('/can-review/:productId', authUser, checkReviewEligibility);
 
 
-export default reviewRouter;
+export {reviewRouter};
