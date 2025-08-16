@@ -7,4 +7,4 @@ const couponRouter = express.Router();
 couponRouter.get('/list', getAllCoupons);
 couponRouter.post('/create', authSeller, createCoupon);
 
-export default couponRouter;
+export {couponRouter};
