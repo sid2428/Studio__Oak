@@ -11,4 +11,4 @@ orderRouter.get('/seller', authSeller, getAllOrders);
 orderRouter.post('/stripe', authUser, placeOrderStripe);
 orderRouter.post('/status', authSeller, updateOrderStatus); // New route
 
-export default orderRouter;
+export {orderRouter};
