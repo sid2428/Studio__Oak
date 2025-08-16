@@ -9,4 +9,4 @@ const geminiRouter = express.Router();
 // Using authUser middleware to get userId
 geminiRouter.post('/chat', authUser, generateChatResponse);
 
-export default geminiRouter;
+export {geminiRouter};
