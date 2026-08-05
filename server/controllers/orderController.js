@@ -1,6 +1,8 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import stripe from "stripe"
+import Razorpay from "razorpay"
+import crypto from "crypto"
 import User from "../models/User.js"
 import { decreaseProductStock } from "./productController.js"; // New import
 import Coupon from "../models/Coupon.js";
@@ -282,6 +284,153 @@ export const stripeWebhooks = async (request, response)=>{
             break;
     }
     response.json({received: true});
+}
+
+
+// Place Order Razorpay (create order) : /api/order/razorpay
+export const placeOrderRazorpay = async (req, res)=>{
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const { userId, items, address, couponCode } = req.body;
+
+        if(!address || items.length === 0){
+            return res.json({success: false, message: "Invalid data"})
+        }
+        const user = await User.findById(userId).session(session);
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
+        }
+
+        // 1. Check stock for all items within the transaction
+        for (const item of items) {
+            const product = await Product.findById(item.product).session(session);
+            if (!product || product.stock < item.quantity) {
+                throw new Error(`Product "${product?.name || 'Selected item'}" is out of stock.`);
+            }
+        }
+
+        // Calculate Amount Using Items
+        let amount = await items.reduce(async (acc, item)=>{
+            const product = await Product.findById(item.product).session(session);
+            return (await acc) + product.offerPrice * item.quantity;
+        }, 0)
+
+        let discountAmount = 0;
+        let couponApplied = false;
+
+        if (couponCode) {
+            const coupon = await Coupon.findOne({ code: couponCode }).session(session);
+            if (coupon) {
+                if (coupon.oneTimeUse && user.hasUsedFirstOrderCoupon) {
+                    return res.json({ success: false, message: "Coupon already used." });
+                }
+                if (amount >= coupon.minPurchase) {
+                    discountAmount = amount * (coupon.discount / 100);
+                    amount -= discountAmount;
+                    couponApplied = true;
+                }
+            }
+        }
+
+        // Add Tax Charge (2%)
+        amount += Math.floor(amount * 0.02);
+
+        // Razorpay Gateway Initialize
+        const razorpayInstance = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
+
+        const currency = process.env.RAZORPAY_CURRENCY || "INR";
+
+        // Create the Razorpay order (amount is in the smallest currency unit, e.g. paise)
+        const razorpayOrder = await razorpayInstance.orders.create({
+            amount: Math.round(amount * 100),
+            currency,
+            receipt: `receipt_${Date.now()}`,
+        });
+
+        // Create the DB order (unpaid until signature is verified)
+        const order = await Order.create([{
+            userId,
+            items,
+            amount,
+            address,
+            paymentType: "Razorpay",
+            couponApplied,
+            discountAmount,
+            razorpayOrderId: razorpayOrder.id,
+        }], { session });
+
+        if (couponApplied) {
+            const coupon = await Coupon.findOne({ code: couponCode }).session(session);
+            if (coupon.oneTimeUse) {
+                user.hasUsedFirstOrderCoupon = true;
+                await user.save({ session });
+            }
+        }
+
+        // Decrease stock for each item within the transaction
+        for (const item of items) {
+            await decreaseProductStock(item.product, item.quantity, session);
+        }
+
+        // Commit the transaction only after everything succeeded
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.json({
+            success: true,
+            orderId: order[0]._id,
+            razorpayOrderId: razorpayOrder.id,
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+        });
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.json({ success: false, message: error.message });
+    }
+}
+
+// Verify Razorpay Payment Signature : /api/order/verify
+export const verifyRazorpayPayment = async (req, res)=>{
+    try {
+        const { userId, orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+        if (!orderId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+            return res.json({ success: false, message: "Missing payment details" });
+        }
+
+        // Recreate the signature on the server using the secret and compare
+        const expectedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+            .digest("hex");
+
+        if (expectedSignature !== razorpay_signature) {
+            return res.json({ success: false, message: "Payment verification failed" });
+        }
+
+        // Ensure the order exists and belongs to the authenticated user + this Razorpay order
+        const order = await Order.findOne({ _id: orderId, userId, razorpayOrderId: razorpay_order_id });
+        if (!order) {
+            return res.json({ success: false, message: "Order not found" });
+        }
+
+        // Mark payment as paid and record the payment id
+        order.isPaid = true;
+        order.razorpayPaymentId = razorpay_payment_id;
+        await order.save();
+
+        // Clear the user's cart after a successful payment
+        await User.findByIdAndUpdate(userId, { cartItems: {} });
+
+        return res.json({ success: true, message: "Payment verified successfully" });
+    } catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
 }
 
 

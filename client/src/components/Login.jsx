@@ -3,7 +3,7 @@ import { useAppContext } from "../context/AppContext";
 import toast from 'react-hot-toast';
 
 const Login = () => {
-    const { setShowUserLogin, setUser, navigate, axios, initialLoginMode } = useAppContext();
+    const { setShowUserLogin, hydrateUser, navigate, axios, initialLoginMode } = useAppContext();
     const [isLogin, setIsLogin] = useState(true);
     const [showOtpInput, setShowOtpInput] = useState(false);
     const [otp, setOtp] = useState('');
@@ -31,7 +31,9 @@ const Login = () => {
             if (data.success) {
                 if (isLogin) {
                     toast.success('Login Successful');
-                    setUser(data.user);
+                    // Re-load the full session user from the cookie that login just set,
+                    // so the navbar and downstream flows (address, checkout) update immediately.
+                    await hydrateUser();
                     setShowUserLogin(false);
                     navigate('/');
                 } else {

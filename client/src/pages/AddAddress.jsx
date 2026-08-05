@@ -17,7 +17,7 @@ const InputField = ({ type, placeholder, name, handleChange, address })=>(
 
 const AddAddress = () => {
 
-    const {axios, user, navigate} = useAppContext();
+    const {axios, user, authLoading, navigate} = useAppContext();
 
     const [address, setAddress] = useState({
         firstName: '',
@@ -38,8 +38,6 @@ const AddAddress = () => {
             ...prevAddress,
             [name]: value,
         }))
-        console.log(address);
-        
     }
 
 
@@ -61,10 +59,12 @@ const AddAddress = () => {
     }
 
     useEffect(()=>{
-        if(!user){
+        // Only redirect once auth has actually resolved, otherwise the page
+        // bounces to /cart during the brief window while the user is still loading.
+        if(!authLoading && !user){
             navigate('/cart')
         }
-    },[])
+    },[authLoading, user, navigate])
 
   return (
     <div className='mt-16 pb-16'>

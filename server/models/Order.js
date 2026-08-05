@@ -12,7 +12,10 @@ const orderSchema = new mongoose.Schema({
     paymentType: {type: String, required: true},
     isPaid: {type: Boolean, required: true, default: false},
     couponApplied: { type: Boolean, default: false },
-    discountAmount: { type: Number, default: 0 }
+    discountAmount: { type: Number, default: 0 },
+    // Razorpay references (only set for Razorpay online payments)
+    razorpayOrderId: { type: String },
+    razorpayPaymentId: { type: String }
 },{ timestamps: true })
 
 const Order = mongoose.models.order || mongoose.model('order', orderSchema)
