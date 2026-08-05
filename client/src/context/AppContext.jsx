@@ -13,6 +13,7 @@ export const AppContextProvider = ({ children }) => {
     const currency = import.meta.env.VITE_CURRENCY;
     const navigate = useNavigate();
     const [user, setUser] = useState(null)
+    const [authLoading, setAuthLoading] = useState(true) // true until the first is-auth check resolves
     const [isSeller, setIsSeller] = useState(false)
     const [showUserLogin, setShowUserLogin] = useState(false)
     const [initialLoginMode, setInitialLoginMode] = useState('login'); // New state
@@ -39,13 +40,30 @@ export const AppContextProvider = ({ children }) => {
 
     const fetchUser = async () => {
         try {
-            const { data } = await axios.get('api/user/is-auth');
+            const { data } = await axios.get('/api/user/is-auth');
             if (data.success) {
                 setUser(data.user);
                 setCartItems(data.user.cartItems);
             }
         } catch (error) {
             setUser(null);
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    // Re-load the authenticated user from the session (e.g. right after login).
+    // Unlike fetchUser it does NOT touch cartItems, so a guest cart is preserved.
+    const hydrateUser = async () => {
+        try {
+            const { data } = await axios.get('/api/user/is-auth');
+            if (data.success) {
+                setUser(data.user);
+            }
+        } catch (error) {
+            // Keep the current state on a transient error; the caller shows its own toast.
+        } finally {
+            setAuthLoading(false);
         }
     };
 
@@ -232,7 +250,7 @@ export const AppContextProvider = ({ children }) => {
     const value = {
         navigate, user, setUser, setIsSeller, isSeller,
         showUserLogin, setShowUserLogin, initialLoginMode, setInitialLoginMode, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems, increaseStock,
-        wishlist, addToWishlist, removeFromWishlist, isChatbotOpen, setIsChatbotOpen, coupons, showOrderSuccess, setShowOrderSuccess, fetchUser
+        wishlist, addToWishlist, removeFromWishlist, isChatbotOpen, setIsChatbotOpen, coupons, showOrderSuccess, setShowOrderSuccess, fetchUser, hydrateUser, authLoading
     }
 
     return <AppContext.Provider value={value}>

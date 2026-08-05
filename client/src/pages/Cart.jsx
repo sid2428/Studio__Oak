@@ -4,6 +4,21 @@ import { assets } from "../assets/assets";
 import toast from "react-hot-toast";
 import CouponModal from "../components/CouponModal"; // Import the new modal
 
+// Dynamically loads the Razorpay Checkout script, only when it's actually needed.
+// Resolves true once the SDK is available, false if it fails to load.
+const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+        if (window.Razorpay) {
+            return resolve(true);
+        }
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
+
 const Cart = () => {
     const {products, currency, cartItems, removeFromCart, getCartCount, updateCartItem, navigate, getCartAmount, axios, user, setCartItems, coupons, setShowOrderSuccess} = useAppContext()
     const [cartArray, setCartArray] = useState([])
@@ -71,12 +86,75 @@ const Cart = () => {
         toast.success("Coupon removed.");
     };
 
+    // Handles the Razorpay online payment flow: create an order on the
+    // backend, open Razorpay Checkout, then verify the signature server-side.
+    const payWithRazorpay = async () => {
+        const scriptLoaded = await loadRazorpayScript();
+        if (!scriptLoaded) {
+            toast.error("Failed to load Razorpay. Please check your connection and try again.");
+            return;
+        }
+
+        const { data } = await axios.post('/api/order/razorpay', {
+            userId: user._id,
+            items: cartArray.map(item => ({ product: item._id, quantity: item.quantity })),
+            address: selectedAddress._id,
+            couponCode: appliedCoupon ? appliedCoupon.code : ""
+        });
+
+        if (!data.success) {
+            return toast.error(data.message);
+        }
+
+        const options = {
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+            amount: data.amount,
+            currency: data.currency,
+            name: "Studio Oak",
+            description: "Order Payment",
+            order_id: data.razorpayOrderId,
+            handler: async (response) => {
+                try {
+                    const { data: verifyData } = await axios.post('/api/order/verify', {
+                        orderId: data.orderId,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                    });
+
+                    if (verifyData.success) {
+                        setCartItems({});
+                        setShowOrderSuccess(true);
+                    } else {
+                        toast.error(verifyData.message);
+                    }
+                } catch (error) {
+                    toast.error(error.message);
+                }
+            },
+            prefill: {
+                name: user?.name || "",
+                email: user?.email || "",
+            },
+            theme: { color: "#815a58" },
+            modal: {
+                ondismiss: () => toast.error("Payment cancelled."),
+            },
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.on('payment.failed', (response) => {
+            toast.error(response.error?.description || "Payment failed. Please try again.");
+        });
+        razorpay.open();
+    };
+
     const placeOrder = async () => {
         try {
             if (!selectedAddress) {
                 return toast.error("Please select an address")
             }
-    
+
             // Place Order with COD
             if (paymentOption === "COD") {
                 const { data } = await axios.post('/api/order/cod', {
@@ -85,13 +163,16 @@ const Cart = () => {
                     address: selectedAddress._id,
                     couponCode: appliedCoupon ? appliedCoupon.code : ""
                 })
-    
+
                 if (data.success) {
                     setCartItems({})
                     setShowOrderSuccess(true);
                 } else {
                     toast.error(data.message)
                 }
+            } else if (paymentOption === "Razorpay") {
+                // Place Order with Razorpay
+                await payWithRazorpay();
             } else {
                 // Place Order with Stripe
                 const { data } = await axios.post('/api/order/stripe', {
@@ -100,7 +181,7 @@ const Cart = () => {
                     address: selectedAddress._id,
                     couponCode: appliedCoupon ? appliedCoupon.code : ""
                 })
-    
+
                 if (data.success) {
                     window.location.replace(data.url)
                 } else {
@@ -225,7 +306,8 @@ const Cart = () => {
 
                         <select onChange={e => setPaymentOption(e.target.value)} className="w-full border border-gray-300 bg-white px-3 py-2 mt-2 outline-none">
                             <option value="COD">Cash On Delivery</option>
-                            <option value="Online">Online Payment</option>
+                            <option value="Online">Online Payment (Stripe)</option>
+                            <option value="Razorpay">Pay Online (Razorpay)</option>
                         </select>
                     
                         <div className="mt-6">
